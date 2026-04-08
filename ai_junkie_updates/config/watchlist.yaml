@@ -1,0 +1,47 @@
+# =============================================================
+# AI Junkie Updates — Watchlist Configuration
+# =============================================================
+# Items scoring 40–49 are only delivered if they match a
+# term from this watchlist (checked against tags and source_name).
+# =============================================================
+
+companies:
+  - OpenAI
+  - Anthropic
+  - Google DeepMind
+  - Meta AI
+  - Mistral AI
+  - xAI
+  - Cohere
+  - HuggingFace
+  - Stability AI
+  - Runway
+  - ElevenLabs
+  - Perplexity
+  - Inflection
+  - Character.AI
+  - Adept
+  - Cognition
+  - Together AI
+  - Groq
+  - Cerebras
+  - SambaNova
+
+models:
+  - GPT-5
+  - GPT-4o
+  - Claude 4
+  - Gemini 2
+  - Llama 4
+  - Mistral Large
+  - Grok 3
+  - Command R+
+
+topics:
+  - AGI
+  - model collapse
+  - safety incident
+  - regulatory ban
+  - billion dollar
+  - acquisition
+  - raises
