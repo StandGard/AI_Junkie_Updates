@@ -96,7 +96,12 @@ changelog:
     url: https://github.com/vllm-project/vllm/releases
 
 github:
-  # Optional: provide a GitHub personal access token for higher rate limits
+  # STRONGLY RECOMMENDED: provide a GitHub token. Unauthenticated requests are
+  # capped at 60/hour per IP, but this agent polls every repo each cycle
+  # (10 repos every 5 min = ~120/hour), so without a token it will perpetually
+  # hit HTTP 403 "rate limit exceeded" and collect nothing. A token raises the
+  # limit to 5,000/hour. Uncomment the line below and set GITHUB_TOKEN in the
+  # environment (load_sources expands ${...} placeholders).
   # - token: "${GITHUB_TOKEN}"
   - repo: huggingface/transformers
   - repo: openai/openai-python

@@ -89,6 +89,41 @@ async def test_sources_all_blocked():
     _check("sources: all blocked -> 0 reachable agents", reachable == 0)
 
 
+async def test_sources_rate_limited():
+    # Hosts respond but are auth/rate-limited (e.g. GitHub 60/hr unauthenticated).
+    with _patch_probe((preflight.RATE_LIMITED, "HTTP 403 rate limit")):
+        rows = await preflight.check_sources()
+    by_agent = {r[0]: r for r in rows}
+    _check("sources: rate-limited host -> RATE_LIMITED (not OK)",
+           by_agent["github"][1] == preflight.RATE_LIMITED)
+    # Rate-limited does not count as 'fully reachable' for the GO verdict.
+    reachable = preflight.print_sources(rows)
+    _check("sources: rate-limited not counted as reachable", reachable == 0)
+
+
+def test_probe_status_classification():
+    # Unit-check the status mapping the live GitHub run surfaced.
+    import aiohttp
+    from unittest.mock import patch as _patch
+
+    async def run(status, body):
+        class _Resp:
+            def __init__(self): self.status = status
+            async def read(self): return body.encode()
+            async def __aenter__(self): return self
+            async def __aexit__(self, *a): return False
+        class _Sess:
+            def get(self, *a, **k): return _Resp()
+        return await preflight._probe(_Sess(), "https://api.github.com/x")
+
+    st_429, _ = asyncio.run(run(429, "{}"))
+    st_403rl, _ = asyncio.run(run(403, '{"message":"API rate limit exceeded"}'))
+    st_200, _ = asyncio.run(run(200, "[]"))
+    _check("probe: 429 -> RATE_LIMITED", st_429 == preflight.RATE_LIMITED)
+    _check("probe: 403 rate-limit body -> RATE_LIMITED", st_403rl == preflight.RATE_LIMITED)
+    _check("probe: 200 -> OK", st_200 == preflight.OK)
+
+
 def test_verdict_go():
     rc = preflight.print_verdict(creds_ok=True, reachable_agents=3)
     _check("verdict: creds + reachable -> GO (exit 0)", rc == 0)
@@ -119,10 +154,11 @@ async def test_twitter_token_enables_probe():
 SYNC_TESTS = [
     test_credentials_all_present, test_credentials_missing,
     test_verdict_go, test_verdict_no_go_creds, test_verdict_no_go_network,
+    test_probe_status_classification,
 ]
 ASYNC_TESTS = [
     test_sources_all_reachable, test_sources_all_blocked,
-    test_twitter_token_enables_probe,
+    test_sources_rate_limited, test_twitter_token_enables_probe,
 ]
 
 

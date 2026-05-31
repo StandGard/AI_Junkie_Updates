@@ -41,8 +41,11 @@
 - `import ai_junkie_updates.main` succeeds.
 - `python tests/test_pipeline_offline.py` — 17/17 (normalize, dedupe w/ real SQLite, filter tiers, formatter, router batching + persistence).
 - `python tests/test_agents_offline.py` — 30/30 (all 13 agents' collect() parsing paths, mocked HTTP, dedupe-on-re-poll, env-token expansion).
-- `python tests/test_preflight_offline.py` — 13/13 (credential checks, source grouping, GO/NO-GO verdict).
-- `python -m ai_junkie_updates.preflight` — live-readiness report: checks credentials + probes every configured source, prints GO/NO-GO. (In this sandbox: NO-GO — keys missing, sources allowlist-blocked except `api.github.com`, which it correctly flags reachable.)
+- `python tests/test_preflight_offline.py` — 18/18 (credentials, source grouping, GO/NO-GO verdict, rate-limit classification).
+- `python -m ai_junkie_updates.preflight` — live-readiness report: checks credentials + probes every configured source, prints GO/NO-GO. (In this sandbox: NO-GO — keys missing; all sources allowlist-blocked except `api.github.com`.)
+
+### First real (non-mocked) live data point
+A live `GitHubAgent.collect()` run reached **real** GitHub (`Server: Varnish`, `X-RateLimit-Limit: 60`) — confirming the agent HTTP path works against a live endpoint — but returned 0 items: HTTP 403 `"API rate limit exceeded"`. Unauthenticated GitHub allows 60 req/hr per IP; the agent polls 10 repos every 5 min (~120/hr), so it self-rate-limits. **Operational fix: set a `GITHUB_TOKEN`** (raises the limit to 5,000/hr; see `sources.yaml`). Preflight now reports this as `RATE LIMITED` rather than a misleading `OK`.
 
 ## Architecture Quick Reference
 

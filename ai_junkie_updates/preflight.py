@@ -60,6 +60,7 @@ def _bold(t: str) -> str:
 OK = "OK"
 MISSING = "MISSING"
 BLOCKED = "BLOCKED"
+RATE_LIMITED = "RATE LIMITED"
 NO_TOKEN = "NO TOKEN"
 NO_SOURCES = "NO SOURCES"
 LOCAL = "LOCAL"
@@ -68,6 +69,7 @@ _MARK = {
     OK: _green("●"),
     MISSING: _red("●"),
     BLOCKED: _red("●"),
+    RATE_LIMITED: _yellow("●"),
     NO_TOKEN: _yellow("●"),
     NO_SOURCES: _yellow("○"),
     LOCAL: _yellow("○"),
@@ -145,10 +147,16 @@ async def _probe(session: aiohttp.ClientSession, url: str) -> Tuple[str, str]:
             url, headers=_PROBE_HEADERS, allow_redirects=True,
             timeout=aiohttp.ClientTimeout(total=12),
         ) as resp:
-            body = (await resp.read())[:200].decode("utf-8", "replace").lower()
+            body = (await resp.read())[:300].decode("utf-8", "replace").lower()
             if "not in allowlist" in body:
                 return BLOCKED, "host not in network allowlist"
-            # Any HTTP response (even 401/403/404) means the host is reachable.
+            # Host is reachable, but auth/rate limits mean it won't yield data
+            # as configured. Surface that distinctly from a clean OK.
+            if resp.status in (401, 403, 429):
+                if "rate limit" in body or resp.status == 429:
+                    return RATE_LIMITED, f"HTTP {resp.status} rate limit (add an API token)"
+                return RATE_LIMITED, f"HTTP {resp.status} auth required (add an API token)"
+            # Any other HTTP response means the host is reachable and serving.
             return OK, f"HTTP {resp.status}"
     except asyncio.TimeoutError:
         return BLOCKED, "timeout"
@@ -192,9 +200,14 @@ async def check_sources() -> List[Tuple[str, str, int, int, str]]:
 
             results = await asyncio.gather(*(_probe(session, u) for u in urls))
             reachable = sum(1 for st, _ in results if st == OK)
+            limited = sum(1 for st, _ in results if st == RATE_LIMITED)
             total = len(urls)
             if reachable == total:
                 status, detail = OK, "all reachable"
+            elif reachable + limited == total and limited:
+                # Hosts respond but every reachable one is auth/rate-limited.
+                status = RATE_LIMITED
+                detail = next((d for st, d in results if st == RATE_LIMITED), "rate limited")
             elif reachable == 0:
                 status = BLOCKED
                 detail = results[0][1] if results else "unreachable"
@@ -213,10 +226,15 @@ def print_sources(rows: List[Tuple[str, str, int, int, str]]) -> int:
         if status == OK:
             fully_ok += 1
         # Only show a reach fraction when an actual probe ran.
-        probed = status in (OK, BLOCKED)
+        probed = status in (OK, BLOCKED, RATE_LIMITED)
         reach = f"{reachable}/{total}" if (probed and total) else "-"
         mark = _MARK.get(status, "●")
-        colour = _green if status == OK else (_yellow if status in (NO_TOKEN, NO_SOURCES, LOCAL) else _red)
+        if status == OK:
+            colour = _green
+        elif status in (NO_TOKEN, NO_SOURCES, LOCAL, RATE_LIMITED):
+            colour = _yellow
+        else:
+            colour = _red
         print(f"   {mark} {agent:<18} {reach:<8} {colour(status):<20} {detail}")
     return fully_ok
 
