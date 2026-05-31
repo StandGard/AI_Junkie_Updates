@@ -32,7 +32,7 @@ All environment variables use the `AIJU_` prefix. Copy `.env.example` to `.env` 
 | `AIJU_SCORE_THRESHOLD_WATCHLIST` | `40` | Minimum score for watchlist delivery |
 | `AIJU_POLL_INTERVAL_SECONDS` | `300` | Agent polling interval (5 minutes) |
 | `AIJU_MAX_CONCURRENT_AGENTS` | `5` | Max agents running simultaneously |
-| `AIJU_CLAUDE_MODEL` | `claude-opus-4-5` | Claude model for analysis |
+| `AIJU_CLAUDE_MODEL` | `claude-opus-4-7` | Claude model for analysis |
 | `AIJU_LOG_LEVEL` | `INFO` | Logging level |
 
 ### Settings Validation
