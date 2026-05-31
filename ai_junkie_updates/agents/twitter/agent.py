@@ -46,6 +46,11 @@ class TwitterAgent(BaseAgent):
                 if src.get("accounts"):
                     for account in src["accounts"]:
                         queries.append(f"from:{account}")
+                # Individual founders/researchers/influencers are tracked the
+                # same way as company accounts.
+                if src.get("individuals"):
+                    for handle in src["individuals"]:
+                        queries.append(f"from:{handle}")
                 if src.get("search_terms"):
                     queries.extend(src["search_terms"])
 

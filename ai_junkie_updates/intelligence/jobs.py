@@ -25,6 +25,7 @@ from typing import List, Optional
 
 from ai_junkie_updates.intelligence.clustering import clusterer
 from ai_junkie_updates.intelligence.entity_linker import entity_linker
+from ai_junkie_updates.intelligence.ingest import openrouter_ingestor
 from ai_junkie_updates.intelligence.knowledge_base import knowledge_base
 from ai_junkie_updates.intelligence.ranking_engine import ranking_engine
 from ai_junkie_updates.intelligence.synthesis import synthesizer
@@ -62,7 +63,14 @@ class IntelligenceJobs:
         cluster = await clusterer.run_once()
         return {"link": link, "cluster": cluster}
 
+    async def run_ingest(self) -> dict:
+        """Refresh structured KB data (model pricing/context) from OpenRouter."""
+        return await openrouter_ingestor.run_once()
+
     async def run_ranking(self) -> dict:
+        # Refresh pricing/context just before recomputing rankings so the value
+        # board reflects the latest prices.
+        await self.run_ingest()
         return await ranking_engine.run_once()
 
     async def run_synthesis(self) -> dict:

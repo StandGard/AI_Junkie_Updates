@@ -23,6 +23,20 @@ twitter:
       - elevenlabs
       - perplexity_ai
       - deepseek_ai
+    # Founders, researchers, and industry figures worth tracking directly.
+    individuals:
+      - sama              # Sam Altman (OpenAI)
+      - gdb               # Greg Brockman (OpenAI)
+      - karpathy          # Andrej Karpathy
+      - ylecun            # Yann LeCun (Meta)
+      - JeffDean          # Jeff Dean (Google)
+      - demishassabis     # Demis Hassabis (DeepMind)
+      - AravSrinivas      # Aravind Srinivas (Perplexity)
+      - clementdelangue   # Clément Delangue (Hugging Face)
+      - alexalbert__      # Alex Albert (Anthropic DevRel)
+      - emollick          # Ethan Mollick
+      - simonw            # Simon Willison
+      - swyx              # Shawn Wang
     search_terms:
       - "AI model release"
       - "model launch"
@@ -56,6 +70,20 @@ rss:
     url: https://rss.arxiv.org/rss/cs.AI
   - name: arXiv cs.LG
     url: https://rss.arxiv.org/rss/cs.LG
+
+# YouTube channels — ingested via channel RSS (no API key). These flow through
+# the RSS agent. The feed URL format is:
+#   https://www.youtube.com/feeds/videos.xml?channel_id=<CHANNEL_ID>
+# To add a channel: open it, View Source, search for "channelId", paste below.
+# Entries with an unresolved channel_id simply fail-soft (logged, skipped).
+youtube:
+  - name: "YouTube: Anthropic"
+    url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCrDwWp7EBBv4NwvScIpBDOA"
+  - name: "YouTube: OpenAI"
+    url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCXZCJLdBC09xxGZ6gcdrc6A"
+  - name: "YouTube: Google DeepMind"
+    url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCP7jMXSY2xbc3KCAE0MHQ-A"
+  # Add more channels (creators, founders, AI news) using the format above.
 
 web_scraper:
   - name: OpenAI News

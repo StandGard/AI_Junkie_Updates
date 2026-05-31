@@ -23,7 +23,9 @@ class RSSAgent(BaseAgent):
             source_name="rss",
             poll_interval_seconds=settings.POLL_INTERVAL_SECONDS,
         )
-        self._sources = load_sources("rss")
+        # YouTube channels are plain RSS (youtube.com/feeds/videos.xml?channel_id=…)
+        # so they ride the same proven RSS path — no separate agent needed.
+        self._sources = load_sources("rss") + load_sources("youtube")
 
     async def collect(self) -> List[RawItem]:
         """Fetch all configured RSS feeds and return new entries as RawItems."""
