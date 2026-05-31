@@ -162,6 +162,13 @@ class CommandBot:
                                        await self._kb.latest_price(b.id), await self._scores_for_model(b.id))
         return card_a + "\n\n———\n\n" + card_b
 
+    @staticmethod
+    def _as_utc(dt):
+        """Treat a possibly-naive DB datetime as UTC for safe comparison."""
+        if dt is None:
+            return None
+        return dt if dt.tzinfo is not None else dt.replace(tzinfo=timezone.utc)
+
     async def cmd_whatschanged(self, args) -> str:
         window_label = (args[0].lower() if args else "48h")
         hours = _WINDOWS.get(window_label, 48)
@@ -169,7 +176,7 @@ class CommandBot:
             window_label = "48h"
         cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
         events = await self._kb.recent_events(limit=15, min_significance=50)
-        events = [e for e in events if (e.created_at or cutoff) >= cutoff]
+        events = [e for e in events if (self._as_utc(e.created_at) or cutoff) >= cutoff]
         return fmt.format_events(events, window_label)
 
     async def cmd_switch(self, args=None) -> str:
