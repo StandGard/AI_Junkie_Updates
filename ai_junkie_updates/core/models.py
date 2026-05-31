@@ -107,6 +107,9 @@ class UpdateRecord(Base):
     delivery_channel = Column(String, nullable=True)
     delivered_at = Column(DateTime, nullable=True)
     fingerprint = Column(String, nullable=True, index=True)
+    # Intelligence-layer links (populated by entity_linker / clustering).
+    event_id = Column(String, nullable=True, index=True)
+    entity_ids = Column(Text, nullable=True)  # JSON-encoded list of entity slugs
 
     def to_update_item(self) -> UpdateItem:
         """Convert ORM record back to an UpdateItem."""

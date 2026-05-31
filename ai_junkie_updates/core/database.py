@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from ai_junkie_updates.constants import DeliveryChannel, PipelineStatus
 from ai_junkie_updates.core.models import Base, SeenFingerprint, UpdateItem, UpdateRecord
+from ai_junkie_updates.core import kb_models  # noqa: F401  (registers KB tables on Base.metadata)
 from ai_junkie_updates.settings import settings
 from ai_junkie_updates.utils.logger import get_logger
 
@@ -31,6 +32,29 @@ class DatabaseManager:
         async with self._engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         log.info("database_initialized", url=self._url)
+
+    async def ensure_kb_schema(self) -> None:
+        """Idempotently add intelligence-layer columns to the existing `updates`
+        table. ``create_all`` creates new tables but never alters existing ones,
+        so pre-existing databases need these columns added explicitly.
+        """
+        def _add_missing_columns(sync_conn) -> list:
+            from sqlalchemy import inspect as sa_inspect
+
+            existing = {c["name"] for c in sa_inspect(sync_conn).get_columns("updates")}
+            added = []
+            if "event_id" not in existing:
+                sync_conn.exec_driver_sql("ALTER TABLE updates ADD COLUMN event_id VARCHAR")
+                added.append("event_id")
+            if "entity_ids" not in existing:
+                sync_conn.exec_driver_sql("ALTER TABLE updates ADD COLUMN entity_ids TEXT")
+                added.append("entity_ids")
+            return added
+
+        async with self._engine.begin() as conn:
+            added = await conn.run_sync(_add_missing_columns)
+        if added:
+            log.info("updates_columns_added", columns=added)
 
     async def save_item(self, item: UpdateItem) -> None:
         """Insert or update an UpdateItem record."""

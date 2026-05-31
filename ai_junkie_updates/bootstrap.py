@@ -19,6 +19,8 @@ async def bootstrap() -> dict:
 
     # Initialise database (create tables)
     await db.init_db()
+    # Add intelligence-layer columns to pre-existing `updates` tables (idempotent)
+    await db.ensure_kb_schema()
 
     # Warm up the cache singleton (triggers lazy init)
     cache.cleanup()
