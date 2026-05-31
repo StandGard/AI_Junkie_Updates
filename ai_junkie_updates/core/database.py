@@ -27,6 +27,11 @@ class DatabaseManager:
             self._engine, class_=AsyncSession, expire_on_commit=False
         )
 
+    @property
+    def session_factory(self) -> async_sessionmaker[AsyncSession]:
+        """Expose the session factory for data-access layers (e.g. KnowledgeBase)."""
+        return self._session_factory
+
     async def init_db(self) -> None:
         """Create all tables if they do not exist."""
         async with self._engine.begin() as conn:

@@ -1,0 +1,285 @@
+# =============================================================
+# AI Junkie Updates — Knowledge-Base Seed
+# =============================================================
+# Starter set of companies, models, tools, and benchmark definitions for the
+# entities the platform tracks. This is a STARTING POINT — model rosters, prices,
+# and benchmark SCORES are kept current automatically by the live ingestion
+# sources (Phase 3). Edit freely; `KnowledgeBase.seed_from_yaml()` upserts these
+# idempotently on every boot, so additions here are picked up without duplication.
+#
+# Note: "Claude Design" is not a separate Anthropic product; it is tracked as a
+# design/artifacts capability under the Anthropic / Claude entity (see aliases).
+# =============================================================
+
+companies:
+  - id: anthropic
+    name: Anthropic
+    category: frontier_lab
+    homepage_url: https://www.anthropic.com
+    twitter_handle: AnthropicAI
+    aliases: [Anthropic, Claude, Claude Code, Claude Design]
+  - id: openai
+    name: OpenAI
+    category: frontier_lab
+    homepage_url: https://openai.com
+    twitter_handle: OpenAI
+    aliases: [OpenAI, ChatGPT, GPT, Sora, DALL-E]
+  - id: google-deepmind
+    name: Google DeepMind
+    category: frontier_lab
+    homepage_url: https://deepmind.google
+    twitter_handle: GoogleDeepMind
+    aliases: [Google DeepMind, Google AI, DeepMind, Gemini, Google]
+  - id: meta-ai
+    name: Meta AI
+    category: open_source
+    homepage_url: https://ai.meta.com
+    twitter_handle: MetaAI
+    aliases: [Meta AI, Meta, Llama, FAIR]
+  - id: perplexity
+    name: Perplexity
+    category: startup
+    homepage_url: https://www.perplexity.ai
+    twitter_handle: perplexity_ai
+    aliases: [Perplexity, Perplexity AI, Sonar]
+  - id: deepseek
+    name: DeepSeek
+    category: open_source
+    homepage_url: https://www.deepseek.com
+    twitter_handle: deepseek_ai
+    aliases: [DeepSeek, DeepSeek AI]
+  - id: mistral
+    name: Mistral AI
+    category: open_source
+    homepage_url: https://mistral.ai
+    twitter_handle: MistralAI
+    aliases: [Mistral, Mistral AI, Le Chat]
+  - id: xai
+    name: xAI
+    category: frontier_lab
+    homepage_url: https://x.ai
+    twitter_handle: xai
+    aliases: [xAI, Grok]
+  - id: cohere
+    name: Cohere
+    category: startup
+    homepage_url: https://cohere.com
+    twitter_handle: CohereAI
+    aliases: [Cohere, Command]
+  - id: huggingface
+    name: Hugging Face
+    category: tooling
+    homepage_url: https://huggingface.co
+    twitter_handle: huggingface
+    aliases: [Hugging Face, HuggingFace, HF]
+  - id: stability-ai
+    name: Stability AI
+    category: open_source
+    homepage_url: https://stability.ai
+    twitter_handle: StabilityAI
+    aliases: [Stability AI, Stable Diffusion]
+  - id: midjourney
+    name: Midjourney
+    category: startup
+    homepage_url: https://www.midjourney.com
+    twitter_handle: midjourney
+    aliases: [Midjourney]
+  - id: runway
+    name: Runway
+    category: startup
+    homepage_url: https://runwayml.com
+    twitter_handle: runwayml
+    aliases: [Runway, Runway ML, Gen-3]
+  - id: elevenlabs
+    name: ElevenLabs
+    category: startup
+    homepage_url: https://elevenlabs.io
+    twitter_handle: elevenlabs
+    aliases: [ElevenLabs, Eleven Labs]
+
+models:
+  # Anthropic — Claude family (current IDs from the runtime environment)
+  - id: claude-opus-4-8
+    company_id: anthropic
+    family: claude
+    display_name: Claude Opus 4.8
+    modality: [text, vision]
+    is_open_source: false
+    status: current
+    aliases: [Claude Opus, Opus 4.8, Claude 4]
+  - id: claude-sonnet-4-6
+    company_id: anthropic
+    family: claude
+    display_name: Claude Sonnet 4.6
+    modality: [text, vision]
+    is_open_source: false
+    status: current
+    aliases: [Claude Sonnet, Sonnet 4.6]
+  - id: claude-haiku-4-5
+    company_id: anthropic
+    family: claude
+    display_name: Claude Haiku 4.5
+    modality: [text, vision]
+    is_open_source: false
+    status: current
+    aliases: [Claude Haiku, Haiku 4.5]
+  # OpenAI — GPT family
+  - id: gpt-5
+    company_id: openai
+    family: gpt
+    display_name: GPT-5
+    modality: [text, vision, audio]
+    is_open_source: false
+    status: current
+    aliases: [GPT-5, ChatGPT]
+  - id: gpt-4o
+    company_id: openai
+    family: gpt
+    display_name: GPT-4o
+    modality: [text, vision, audio]
+    is_open_source: false
+    status: current
+    aliases: [GPT-4o, 4o]
+  # Google — Gemini family
+  - id: gemini-2
+    company_id: google-deepmind
+    family: gemini
+    display_name: Gemini 2
+    modality: [text, vision, audio, video]
+    is_open_source: false
+    status: current
+    aliases: [Gemini 2, Gemini]
+  # Meta — Llama (open source)
+  - id: llama-4
+    company_id: meta-ai
+    family: llama
+    display_name: Llama 4
+    modality: [text, vision]
+    is_open_source: true
+    status: current
+    aliases: [Llama 4, Llama]
+  # DeepSeek (open source)
+  - id: deepseek-r1
+    company_id: deepseek
+    family: deepseek
+    display_name: DeepSeek-R1
+    modality: [text]
+    is_open_source: true
+    status: current
+    aliases: [DeepSeek-R1, R1]
+  - id: deepseek-v3
+    company_id: deepseek
+    family: deepseek
+    display_name: DeepSeek-V3
+    modality: [text]
+    is_open_source: true
+    status: current
+    aliases: [DeepSeek-V3, V3]
+  # Others on the project watchlist
+  - id: mistral-large
+    company_id: mistral
+    family: mistral
+    display_name: Mistral Large
+    modality: [text]
+    is_open_source: false
+    status: current
+    aliases: [Mistral Large]
+  - id: grok-3
+    company_id: xai
+    family: grok
+    display_name: Grok 3
+    modality: [text, vision]
+    is_open_source: false
+    status: current
+    aliases: [Grok 3, Grok]
+  - id: command-r-plus
+    company_id: cohere
+    family: command
+    display_name: Command R+
+    modality: [text]
+    is_open_source: false
+    status: current
+    aliases: [Command R+, Command R Plus]
+
+tools:
+  - id: claude-code
+    company_id: anthropic
+    name: Claude Code
+    use_case: [coding, agents, automation]
+    url: https://www.claude.com/claude-code
+    description: Anthropic's agentic coding tool (CLI, IDE, web).
+  - id: chatgpt
+    company_id: openai
+    name: ChatGPT
+    use_case: [content, research, business]
+    url: https://chatgpt.com
+    description: OpenAI's conversational assistant.
+  - id: perplexity
+    company_id: perplexity
+    name: Perplexity
+    use_case: [research]
+    url: https://www.perplexity.ai
+    description: AI answer engine with cited web search.
+  - id: cursor
+    name: Cursor
+    use_case: [coding]
+    url: https://cursor.com
+    description: AI-native code editor.
+  - id: github-copilot
+    name: GitHub Copilot
+    use_case: [coding]
+    url: https://github.com/features/copilot
+    description: In-editor AI coding assistant.
+  - id: midjourney
+    company_id: midjourney
+    name: Midjourney
+    use_case: [content]
+    url: https://www.midjourney.com
+    description: Text-to-image generation.
+  - id: runway
+    company_id: runway
+    name: Runway
+    use_case: [video]
+    url: https://runwayml.com
+    description: AI video generation and editing.
+  - id: elevenlabs
+    company_id: elevenlabs
+    name: ElevenLabs
+    use_case: [content, video]
+    url: https://elevenlabs.io
+    description: AI voice generation and dubbing.
+
+benchmarks:
+  # Definitions only — live scores are ingested separately (Phase 3).
+  - id: lmarena-overall
+    name: LMArena (Chatbot Arena) Elo
+    use_case: overall
+    higher_is_better: true
+    source_url: https://lmarena.ai
+    description: Human-preference Elo across general chat.
+  - id: swe-bench-verified
+    name: SWE-bench Verified
+    use_case: coding
+    higher_is_better: true
+    source_url: https://www.swebench.com
+    description: Resolves real GitHub issues; flagship agentic-coding benchmark.
+  - id: aider-polyglot
+    name: Aider Polyglot
+    use_case: coding
+    higher_is_better: true
+    description: Multi-language code editing benchmark.
+  - id: tau-bench
+    name: tau-bench
+    use_case: agents
+    higher_is_better: true
+    description: Tool-use / agentic task completion.
+  - id: gpqa-diamond
+    name: GPQA Diamond
+    use_case: research
+    higher_is_better: true
+    description: Graduate-level science Q&A (reasoning).
+  - id: mmlu-pro
+    name: MMLU-Pro
+    use_case: research
+    higher_is_better: true
+    description: Broad knowledge and reasoning.

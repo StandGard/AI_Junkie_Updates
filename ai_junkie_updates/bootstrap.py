@@ -22,6 +22,15 @@ async def bootstrap() -> dict:
     # Add intelligence-layer columns to pre-existing `updates` tables (idempotent)
     await db.ensure_kb_schema()
 
+    # Seed the knowledge base from config (idempotent upserts). Fail-soft: a bad
+    # seed file should not prevent the system from starting.
+    try:
+        from ai_junkie_updates.intelligence.knowledge_base import knowledge_base
+
+        await knowledge_base.seed_from_yaml()
+    except Exception as exc:
+        log.warning("kb_seed_failed", error=str(exc))
+
     # Warm up the cache singleton (triggers lazy init)
     cache.cleanup()
 
