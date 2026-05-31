@@ -8,6 +8,7 @@ import sys
 from typing import List
 
 from ai_junkie_updates.bootstrap import bootstrap
+from ai_junkie_updates.delivery.command_bot import command_bot
 from ai_junkie_updates.intelligence.jobs import intelligence_jobs
 from ai_junkie_updates.pipeline.router import router
 from ai_junkie_updates.settings import settings
@@ -70,6 +71,9 @@ async def main() -> None:
     # Start the intelligence layer (entity-linking, clustering, ranking, synthesis)
     intelligence_jobs.start()
 
+    # Start the interactive Telegram command bot (inbound /best, /model, ...)
+    await command_bot.start()
+
     log.info(
         "system_started",
         agent_count=len(agents),
@@ -114,6 +118,7 @@ async def main() -> None:
         task.cancel()
 
     await asyncio.gather(*pending, return_exceptions=True)
+    await command_bot.stop()
     await intelligence_jobs.stop()
     await router.stop()
     await db.close()
