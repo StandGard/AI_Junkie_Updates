@@ -149,6 +149,9 @@ class Event(Base):
     first_item_at = Column(DateTime, nullable=True)
     last_item_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=_utcnow)
+    # Set once an advisor brief has been generated + delivered for this event,
+    # so the synthesis job never re-briefs the same story.
+    briefed = Column(Boolean, nullable=False, default=False)
 
 
 class Tool(Base):

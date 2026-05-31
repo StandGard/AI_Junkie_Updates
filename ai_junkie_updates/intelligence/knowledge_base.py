@@ -361,6 +361,31 @@ class KnowledgeBase:
             )
             return list((await s.execute(stmt)).scalars().all())
 
+    async def unbriefed_events(self, min_significance: int = 0, limit: int = 20) -> List[kb.Event]:
+        """Significant events that have not yet had an advisor brief generated."""
+        async with self._sf() as s:
+            stmt = (
+                select(kb.Event)
+                .where(
+                    kb.Event.briefed.is_(False),
+                    kb.Event.significance_score >= min_significance,
+                )
+                .order_by(kb.Event.significance_score.desc(), kb.Event.created_at.desc())
+                .limit(limit)
+            )
+            return list((await s.execute(stmt)).scalars().all())
+
+    async def mark_events_briefed(self, event_ids: List[str]) -> None:
+        """Flag events as briefed so they are not re-processed."""
+        if not event_ids:
+            return
+        async with self._sf() as s:
+            for eid in event_ids:
+                ev = await s.get(kb.Event, eid)
+                if ev is not None:
+                    ev.briefed = True
+            await s.commit()
+
     # --------------------------------------------------------------- leaderboards
     async def set_leaderboard(
         self,

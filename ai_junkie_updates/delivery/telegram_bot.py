@@ -22,6 +22,29 @@ log = get_logger(__name__)
 RATE_LIMIT_WINDOW = 60.0
 RATE_LIMIT_MAX = 20
 
+# Telegram hard limit per message is 4096 chars; leave headroom.
+MAX_MESSAGE_CHARS = 3800
+
+
+def _split_message(text: str, limit: int = MAX_MESSAGE_CHARS) -> list[str]:
+    """Split long text into <=limit chunks, preferring paragraph/line breaks."""
+    if len(text) <= limit:
+        return [text]
+    chunks: list[str] = []
+    remaining = text
+    while len(remaining) > limit:
+        window = remaining[:limit]
+        cut = window.rfind("\n\n")
+        if cut < limit // 2:
+            cut = window.rfind("\n")
+        if cut < limit // 2:
+            cut = limit
+        chunks.append(remaining[:cut].rstrip())
+        remaining = remaining[cut:].lstrip()
+    if remaining:
+        chunks.append(remaining)
+    return chunks
+
 
 class TelegramBot:
     """Sends formatted messages to Telegram channels with rate limiting."""
@@ -70,6 +93,28 @@ class TelegramBot:
             parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
         )
+
+    async def send_text(self, channel: DeliveryChannel, text: str) -> None:
+        """Send a pre-formatted plain/HTML text block to a channel.
+
+        Used by the intelligence layer to deliver synthesized briefs and digests
+        (which are already prose, not UpdateItems). Long messages are split to
+        respect Telegram's 4096-character limit. Reuses the same rate limiting.
+        """
+        channel_id = self._channel_map.get(channel) if self._channel_map else None
+        # Ensure the bot/channel map is initialised even if send() ran first.
+        if not channel_id:
+            self._ensure_bot()
+            channel_id = self._channel_map.get(channel)
+        if not channel_id:
+            log.warning("no_channel_configured", channel=channel.value)
+            return
+
+        for chunk in _split_message(text):
+            await self._rate_limit()
+            await self._send_message(channel_id, chunk)
+            self._send_times.append(time.monotonic())
+        log.info("telegram_text_sent", channel=channel.value, length=len(text))
 
     async def send(self, item: UpdateItem) -> None:
         """Format and send an update to the appropriate Telegram channel."""

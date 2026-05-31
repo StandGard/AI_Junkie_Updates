@@ -8,6 +8,7 @@ import sys
 from typing import List
 
 from ai_junkie_updates.bootstrap import bootstrap
+from ai_junkie_updates.intelligence.jobs import intelligence_jobs
 from ai_junkie_updates.pipeline.router import router
 from ai_junkie_updates.settings import settings
 from ai_junkie_updates.utils.logger import get_logger
@@ -66,6 +67,9 @@ async def main() -> None:
     # Start the router's batching flush loops
     router.start_flush_loops()
 
+    # Start the intelligence layer (entity-linking, clustering, ranking, synthesis)
+    intelligence_jobs.start()
+
     log.info(
         "system_started",
         agent_count=len(agents),
@@ -110,6 +114,7 @@ async def main() -> None:
         task.cancel()
 
     await asyncio.gather(*pending, return_exceptions=True)
+    await intelligence_jobs.stop()
     await router.stop()
     await db.close()
     log.info("shutdown_complete")

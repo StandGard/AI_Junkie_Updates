@@ -46,7 +46,8 @@ class DatabaseManager:
         def _add_missing_columns(sync_conn) -> list:
             from sqlalchemy import inspect as sa_inspect
 
-            existing = {c["name"] for c in sa_inspect(sync_conn).get_columns("updates")}
+            inspector = sa_inspect(sync_conn)
+            existing = {c["name"] for c in inspector.get_columns("updates")}
             added = []
             if "event_id" not in existing:
                 sync_conn.exec_driver_sql("ALTER TABLE updates ADD COLUMN event_id VARCHAR")
@@ -54,6 +55,16 @@ class DatabaseManager:
             if "entity_ids" not in existing:
                 sync_conn.exec_driver_sql("ALTER TABLE updates ADD COLUMN entity_ids TEXT")
                 added.append("entity_ids")
+            # `events.briefed` may be missing on databases created before the
+            # synthesis job existed.
+            event_tables = inspector.get_table_names()
+            if "events" in event_tables:
+                ev_cols = {c["name"] for c in inspector.get_columns("events")}
+                if "briefed" not in ev_cols:
+                    sync_conn.exec_driver_sql(
+                        "ALTER TABLE events ADD COLUMN briefed BOOLEAN DEFAULT 0 NOT NULL"
+                    )
+                    added.append("events.briefed")
             return added
 
         async with self._engine.begin() as conn:

@@ -38,6 +38,17 @@ class Settings(BaseSettings):
     CLAUDE_SYNTHESIS_MODEL: str = "claude-sonnet-4-6"
     LOG_LEVEL: str = "INFO"
 
+    # Intelligence-layer scheduling (seconds). Entity-linking + clustering run
+    # frequently and cheaply; ranking + synthesis run less often.
+    LINK_CLUSTER_INTERVAL_SECONDS: int = 600       # 10 min
+    RANKING_INTERVAL_SECONDS: int = 86400          # daily
+    SYNTHESIS_INTERVAL_SECONDS: int = 3600         # hourly event briefs
+    DIGEST_INTERVAL_SECONDS: int = 86400           # daily digest
+    # Minimum event significance to trigger an advisor brief / digest delivery.
+    BRIEF_MIN_SIGNIFICANCE: int = 70
+    # Set false to run collection only, with no LLM synthesis (cost control).
+    ENABLE_SYNTHESIS: bool = True
+
     def validate_required(self) -> None:
         """Hard-exit if required variables are missing."""
         missing: list[str] = []
