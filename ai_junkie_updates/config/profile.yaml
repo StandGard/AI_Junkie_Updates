@@ -1,0 +1,47 @@
+# =============================================================
+# AI Junkie Updates — User Profile
+# =============================================================
+# Describes YOU and your current AI stack so the advisor can tailor its briefs
+# ("who should care") and generate switch recommendations ("should I move from
+# X to Y?"). Edit freely — it is read on each synthesis run.
+#
+# `current_tools` / `current_models` map your stack to the leaderboard use-cases;
+# the synthesizer compares your picks against the top of each board and only
+# suggests a switch when a clearly better option exists.
+# =============================================================
+
+# A short description of who you are and what you do (free text). Used verbatim
+# as context so the advisor knows your priorities.
+about: >
+  Solo builder working across software development, AI agent systems, automation,
+  content creation, and video. Wants the highest-leverage AI tools and to know
+  immediately when something better, cheaper, or faster ships.
+
+# The use-cases you care about most (must match keys in ranking.yaml). Briefs and
+# switch advice prioritise these.
+priorities:
+  - coding
+  - agents
+  - automation
+  - content
+  - video
+  - research
+
+# What you use today, per use-case. Use model slugs (see seed_entities.yaml /
+# the models table) and tool slugs. Leave a use-case out if you have no current
+# pick — the advisor will then simply recommend the leader.
+current_models:
+  coding: claude-opus-4-8
+  agents: claude-opus-4-8
+  research: claude-opus-4-8
+  content: gpt-5
+
+current_tools:
+  coding: claude-code
+  research: perplexity
+  video: runway
+  content: chatgpt
+
+# Only recommend switching when the better option beats your current pick's
+# leaderboard score by at least this margin (0–1). Prevents noisy churn advice.
+switch_margin: 0.08

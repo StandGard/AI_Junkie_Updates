@@ -142,5 +142,34 @@ class ClaudeClient:
             fingerprint=raw_item.fingerprint,
         )
 
+    # ------------------------------------------------------------------ synthesis
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=30),
+        reraise=True,
+    )
+    async def synthesize(self, system_prompt: str, user_message: str, max_tokens: int = 1500) -> str:
+        """Run a periodic synthesis/digest prompt on the strong model.
+
+        The stable instruction block (``system_prompt``) is sent with
+        ``cache_control`` so repeated synthesis calls within the cache window reuse
+        it cheaply; only the per-call ``user_message`` (the new events/leaderboards)
+        is fresh. Uses CLAUDE_SYNTHESIS_MODEL, not the cheap triage model.
+        """
+        client = self._ensure_client()
+        response = await client.messages.create(
+            model=settings.CLAUDE_SYNTHESIS_MODEL,
+            max_tokens=max_tokens,
+            system=[
+                {
+                    "type": "text",
+                    "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
+            messages=[{"role": "user", "content": user_message}],
+        )
+        return response.content[0].text
+
 
 claude_client = ClaudeClient()
