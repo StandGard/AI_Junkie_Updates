@@ -23,9 +23,16 @@ class RSSAgent(BaseAgent):
             source_name="rss",
             poll_interval_seconds=settings.POLL_INTERVAL_SECONDS,
         )
-        # YouTube channels are plain RSS (youtube.com/feeds/videos.xml?channel_id=…)
-        # so they ride the same proven RSS path — no separate agent needed.
-        self._sources = load_sources("rss") + load_sources("youtube")
+        # YouTube channels are plain RSS (youtube.com/feeds/videos.xml?channel_id=…),
+        # and X/Twitter accounts are routed through an RSS bridge (RSSHub/Nitter).
+        # Both are standard feeds, so they ride the same proven RSS path — no
+        # separate agents needed. The X bridge is best-effort (instances are
+        # flaky); failures fail-soft per the base agent's error handling.
+        self._sources = (
+            load_sources("rss")
+            + load_sources("youtube")
+            + load_sources("rss_bridge")
+        )
 
     async def collect(self) -> List[RawItem]:
         """Fetch all configured RSS feeds and return new entries as RawItems."""

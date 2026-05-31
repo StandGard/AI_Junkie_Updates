@@ -100,11 +100,18 @@ class IntelligenceJobs:
         await knowledge_base.mark_events_briefed([e.id for e in events])
         return {"briefed": len(events)}
 
-    async def run_digest(self) -> dict:
-        digest = await synthesizer.build_digest()
+    async def run_digest(self, hours: int = 24, label: str = "daily") -> dict:
+        digest = await synthesizer.build_digest(hours=hours)
         if digest:
             await self._deliver(digest)
-        return {"digest": 1}
+        return {"digest": label}
+
+    async def run_retention(self) -> dict:
+        """Prune old, event-linked raw items to keep the DB bounded."""
+        from ai_junkie_updates.core.database import db as _db
+
+        deleted = await _db.prune_old_items(settings.RETENTION_DAYS)
+        return {"pruned": deleted}
 
     # ------------------------------------------------------------------- loops
     async def _loop(self, name: str, coro_factory, interval: int,
@@ -121,6 +128,40 @@ class IntelligenceJobs:
             except Exception as exc:
                 log.error("intel_job_error", job=name, error=str(exc))
             await asyncio.sleep(interval)
+
+    @staticmethod
+    def seconds_until(hour: int, weekday: int | None = None, now=None) -> float:
+        """Seconds from `now` until the next occurrence of `hour` (and optional
+        `weekday`, 0=Mon). Used for calendar-aligned digest delivery."""
+        from datetime import datetime, timedelta, timezone
+
+        now = now or datetime.now(timezone.utc)
+        target = now.replace(hour=hour % 24, minute=0, second=0, microsecond=0)
+        if weekday is None:
+            if target <= now:
+                target += timedelta(days=1)
+        else:
+            days_ahead = (weekday - now.weekday()) % 7
+            target += timedelta(days=days_ahead)
+            if target <= now:
+                target += timedelta(days=7)
+        return max(0.0, (target - now).total_seconds())
+
+    async def _clock_loop(self, name: str, coro_factory, hour: int,
+                          weekday: int | None = None) -> None:
+        """Resilient loop that fires daily/weekly at a fixed local hour."""
+        while self._running:
+            try:
+                await asyncio.sleep(self.seconds_until(hour, weekday))
+                if not self._running:
+                    break
+                result = await coro_factory()
+                log.info("intel_job_ran", job=name, **(result or {}))
+            except asyncio.CancelledError:
+                break
+            except Exception as exc:
+                log.error("intel_job_error", job=name, error=str(exc))
+                await asyncio.sleep(3600)  # back off an hour on error, then retry
 
     def start(self) -> None:
         """Launch all intelligence loops as background tasks."""
@@ -158,15 +199,52 @@ class IntelligenceJobs:
                     name="intel-synthesis",
                 )
             )
+            if settings.DIGEST_USE_CLOCK:
+                # Calendar-aligned: daily at DIGEST_HOUR, weekly roll-up on DOW.
+                self._tasks.append(
+                    asyncio.create_task(
+                        self._clock_loop(
+                            "digest_daily",
+                            lambda: self.run_digest(hours=24, label="daily"),
+                            settings.DIGEST_HOUR,
+                        ),
+                        name="intel-digest-daily",
+                    )
+                )
+                self._tasks.append(
+                    asyncio.create_task(
+                        self._clock_loop(
+                            "digest_weekly",
+                            lambda: self.run_digest(hours=168, label="weekly"),
+                            settings.DIGEST_HOUR,
+                            settings.WEEKLY_DIGEST_DOW,
+                        ),
+                        name="intel-digest-weekly",
+                    )
+                )
+            else:
+                self._tasks.append(
+                    asyncio.create_task(
+                        self._loop(
+                            "digest",
+                            self.run_digest,
+                            settings.DIGEST_INTERVAL_SECONDS,
+                            initial_delay=settings.DIGEST_INTERVAL_SECONDS,
+                        ),
+                        name="intel-digest",
+                    )
+                )
+        # Retention sweep keeps the SQLite DB bounded.
+        if settings.RETENTION_DAYS > 0:
             self._tasks.append(
                 asyncio.create_task(
                     self._loop(
-                        "digest",
-                        self.run_digest,
-                        settings.DIGEST_INTERVAL_SECONDS,
-                        initial_delay=settings.DIGEST_INTERVAL_SECONDS,
+                        "retention",
+                        self.run_retention,
+                        settings.RETENTION_INTERVAL_SECONDS,
+                        initial_delay=settings.RETENTION_INTERVAL_SECONDS,
                     ),
-                    name="intel-digest",
+                    name="intel-retention",
                 )
             )
         log.info("intelligence_jobs_started", count=len(self._tasks),

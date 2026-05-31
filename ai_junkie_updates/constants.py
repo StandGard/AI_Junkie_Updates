@@ -23,6 +23,8 @@ class SourceType(str, Enum):
     PODCAST = "podcast"
     REGULATORY = "regulatory"
     API_FEED = "api_feed"
+    YOUTUBE = "youtube"
+    BENCHMARK = "benchmark"
 
 
 # ---------------------------------------------------------------------------
@@ -103,6 +105,8 @@ SCORE_NOISE = 0
 POLL_INTERVALS = {
     "discord": 300,        # push receiver — collect() just drains the inbox
     "rss": 900,
+    "youtube": 3600,       # channel RSS — videos drop infrequently
+    "status": 600,         # status pages change fast during incidents
     "github": 900,
     "changelog": 900,
     "web_scraper": 1800,

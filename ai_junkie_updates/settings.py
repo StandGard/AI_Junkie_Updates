@@ -43,11 +43,23 @@ class Settings(BaseSettings):
     LINK_CLUSTER_INTERVAL_SECONDS: int = 600       # 10 min
     RANKING_INTERVAL_SECONDS: int = 86400          # daily
     SYNTHESIS_INTERVAL_SECONDS: int = 3600         # hourly event briefs
-    DIGEST_INTERVAL_SECONDS: int = 86400           # daily digest
+    DIGEST_INTERVAL_SECONDS: int = 86400           # daily digest (fallback cadence)
+    # Calendar-aligned digest delivery (local-time hour, 0-23). The daily digest
+    # fires at DIGEST_HOUR; a weekly roll-up fires at DIGEST_HOUR on the weekday
+    # given by WEEKLY_DIGEST_DOW (0=Monday). Set DIGEST_USE_CLOCK=false to fall
+    # back to plain interval scheduling.
+    DIGEST_USE_CLOCK: bool = True
+    DIGEST_HOUR: int = 8
+    WEEKLY_DIGEST_DOW: int = 0
     # Minimum event significance to trigger an advisor brief / digest delivery.
     BRIEF_MIN_SIGNIFICANCE: int = 70
     # Set false to run collection only, with no LLM synthesis (cost control).
     ENABLE_SYNTHESIS: bool = True
+
+    # Data retention: prune raw `updates` older than this once they belong to an
+    # event (set to 0 to disable). Keeps the SQLite DB bounded on a small VPS.
+    RETENTION_DAYS: int = 60
+    RETENTION_INTERVAL_SECONDS: int = 86400        # prune sweep cadence
 
     # Health-check HTTP server (for container/uptime monitoring).
     HEALTH_CHECK_ENABLED: bool = True

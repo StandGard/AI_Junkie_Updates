@@ -245,6 +245,31 @@ class DatabaseManager:
                 # Another agent inserted the same fingerprint concurrently — fine.
                 await session.rollback()
 
+    async def prune_old_items(self, days: int) -> int:
+        """Delete raw `updates` older than `days` that already belong to an event.
+
+        Items linked to an event are safe to drop: the clustered `events` row
+        retains the title/summary/significance and the item_id references. Keeps
+        the DB bounded without losing the intelligence layer's knowledge.
+        Returns the number of rows deleted. No-op when days <= 0.
+        """
+        if days <= 0:
+            return 0
+        from sqlalchemy import delete
+
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        async with self._session_factory() as session:
+            stmt = delete(UpdateRecord).where(
+                UpdateRecord.analyzed_at < cutoff,
+                UpdateRecord.event_id.is_not(None),
+            )
+            result = await session.execute(stmt)
+            await session.commit()
+            deleted = result.rowcount or 0
+        if deleted:
+            log.info("items_pruned", deleted=deleted, older_than_days=days)
+        return deleted
+
     async def close(self) -> None:
         """Dispose of the engine connection pool."""
         await self._engine.dispose()

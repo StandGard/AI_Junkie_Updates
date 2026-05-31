@@ -85,6 +85,25 @@ youtube:
     url: "https://www.youtube.com/feeds/videos.xml?channel_id=UCP7jMXSY2xbc3KCAE0MHQ-A"
   # Add more channels (creators, founders, AI news) using the format above.
 
+# X / Twitter via an RSS bridge (no paid API). These flow through the RSS agent.
+# Best-effort: RSSHub/Nitter instances are flaky and may rate-limit or go down —
+# failures fail-soft (logged, skipped). Swap the bridge host below if one dies.
+# Format: https://<rsshub-host>/twitter/user/<handle>
+# Self-hosting RSSHub (https://docs.rsshub.app) is recommended for reliability.
+rss_bridge:
+  - name: "X: @sama"
+    url: "https://rsshub.app/twitter/user/sama"
+  - name: "X: @AnthropicAI"
+    url: "https://rsshub.app/twitter/user/AnthropicAI"
+  - name: "X: @OpenAI"
+    url: "https://rsshub.app/twitter/user/OpenAI"
+  - name: "X: @karpathy"
+    url: "https://rsshub.app/twitter/user/karpathy"
+  - name: "X: @GoogleDeepMind"
+    url: "https://rsshub.app/twitter/user/GoogleDeepMind"
+  # Add more handles using the format above. Keep the list curated — bridges
+  # rate-limit, so fewer high-signal accounts polled less often is more reliable.
+
 web_scraper:
   - name: OpenAI News
     url: https://openai.com/news/
@@ -299,3 +318,12 @@ api_feed:
       pageSize: 20
     pagination:
       page_param: "page"
+  # Provider status pages — Statuspage.io JSON (no key). Surfaces incidents,
+  # outages, and maintenance (infrastructure changes the advisor should flag).
+  # `incidents` carries name + body; the api_feed agent reads the listed path.
+  - name: OpenAI Status
+    url: https://status.openai.com/api/v2/incidents.json
+    content_path: "incidents"
+  - name: Anthropic Status
+    url: https://status.anthropic.com/api/v2/incidents.json
+    content_path: "incidents"
