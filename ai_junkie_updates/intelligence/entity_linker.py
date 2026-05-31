@@ -76,7 +76,8 @@ class EntityLinker:
         def entries(rows, extra_name_attr):
             out = []
             for r in rows:
-                names = set(r.aliases or [])
+                # Tools carry no alias list; companies/models do.
+                names = set(getattr(r, "aliases", None) or [])
                 names.add(getattr(r, extra_name_attr))
                 names.add(r.id)
                 for alias in names:
