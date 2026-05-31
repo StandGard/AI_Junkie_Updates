@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     # Set false to run collection only, with no LLM synthesis (cost control).
     ENABLE_SYNTHESIS: bool = True
 
+    # Health-check HTTP server (for container/uptime monitoring).
+    HEALTH_CHECK_ENABLED: bool = True
+    HEALTH_CHECK_PORT: int = 8585
+
     def validate_required(self) -> None:
         """Hard-exit if required variables are missing."""
         missing: list[str] = []
