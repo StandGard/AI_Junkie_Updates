@@ -38,8 +38,8 @@
 - [ ] Test configuration for pytest + pytest-asyncio
 
 ### Infrastructure
-- [ ] Dockerfile and docker-compose.yml for containerized deployment
-- [ ] CI/CD pipeline (GitHub Actions) — lint, test, build
+- [x] Dockerfile + docker-compose.yml for containerized deployment (mirrors setup_env.sh workarounds; runs as non-root; persists storage volume). NOTE: image build not yet verified locally — sandbox has no Docker daemon and Docker Hub is blocked by the network allowlist; the CI `docker-build` job is the first real build.
+- [x] CI/CD pipeline (GitHub Actions, `.github/workflows/ci.yml`) — offline tests (60 checks) + Docker image build on every push/PR
 - [ ] Health check endpoint (lightweight HTTP server for monitoring)
 - [ ] Metrics collection (Prometheus counters for items collected, analyzed, delivered)
 

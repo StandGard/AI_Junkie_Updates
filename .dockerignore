@@ -1,0 +1,27 @@
+# Keep the build context small and reproducible.
+.git
+.github
+**/__pycache__/
+*.py[cod]
+.venv
+venv
+env
+
+# Never bake secrets or local DB state into the image
+.env
+*.env
+!.env.example
+ai_junkie_updates/storage/*.db
+ai_junkie_updates/storage/*.db-journal
+ai_junkie_updates/storage/*.db-wal
+ai_junkie_updates/storage/*.db-shm
+
+# Docs and tooling not needed at runtime
+docs
+.gitignore
+.dockerignore
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.md
+!README.md

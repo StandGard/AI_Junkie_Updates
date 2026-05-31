@@ -1,0 +1,26 @@
+# =============================================================
+# AI Junkie Updates — Docker Compose
+# =============================================================
+#   1. cp ai_junkie_updates/.env.example ai_junkie_updates/.env
+#   2. fill in AIJU_ANTHROPIC_API_KEY, AIJU_TELEGRAM_BOT_TOKEN, channel IDs
+#   3. docker compose run --rm aiju python -m ai_junkie_updates.preflight   # GO?
+#   4. docker compose up -d
+# =============================================================
+services:
+  aiju:
+    build: .
+    image: ai-junkie-updates
+    container_name: ai-junkie-updates
+    restart: unless-stopped
+    env_file:
+      - ai_junkie_updates/.env
+    volumes:
+      # Persist the SQLite DB across restarts/rebuilds.
+      - aiju_storage:/app/ai_junkie_updates/storage
+    # The app makes no inbound connections except the optional Discord webhook
+    # receiver (default port 8484). Uncomment to expose it.
+    # ports:
+    #   - "8484:8484"
+
+volumes:
+  aiju_storage:

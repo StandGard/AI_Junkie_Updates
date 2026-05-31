@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Local environment / secrets
+.env
+*.env
+!.env.example
+
+# Runtime data
+ai_junkie_updates/storage/*.db
+ai_junkie_updates/storage/*.db-journal
+ai_junkie_updates/storage/*.db-wal
+ai_junkie_updates/storage/*.db-shm
+
+# Test / tooling artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/

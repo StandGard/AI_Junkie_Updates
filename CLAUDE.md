@@ -128,6 +128,22 @@ python -c "from ai_junkie_updates.agents.twitter import TwitterAgent"
 sqlite3 ai_junkie_updates/storage/aiju.db "SELECT headline, score FROM updates ORDER BY analyzed_at DESC LIMIT 10"
 ```
 
+## Deployment (Docker)
+
+```bash
+# 1. configure credentials
+cp ai_junkie_updates/.env.example ai_junkie_updates/.env   # then fill in keys
+# 2. confirm live-readiness inside the container
+docker compose run --rm aiju python -m ai_junkie_updates.preflight   # want GO
+# 3. run the poller (restarts unless stopped; SQLite persisted in a volume)
+docker compose up -d
+```
+
+CI (`.github/workflows/ci.yml`) runs the 60 offline checks + a Docker image
+build on every push/PR. The image build has **not** been verified in the
+web/sandbox (no Docker daemon; Docker Hub blocked by the network allowlist) —
+CI is the first real build.
+
 ## Conventions
 
 - **Env vars**: Always `AIJU_` prefix
