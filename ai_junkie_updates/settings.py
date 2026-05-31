@@ -1,18 +1,41 @@
-"""Application settings loaded from environment variables with AIJU_ prefix."""
+"""Application settings loaded from environment variables with AIJU_ prefix.
+
+Loads ``ai_junkie_updates/.env`` (if present) at import time so credentials work
+for BOTH run paths:
+  * ``python -m ai_junkie_updates.main``  — .env -> os.environ via python-dotenv
+  * ``docker compose up``                 — .env loaded by compose's env_file
+
+load_dotenv populates os.environ, which matters for the non-AIJU_ secrets
+(TWITTER_BEARER_TOKEN, GITHUB_TOKEN, CRUNCHBASE_API_KEY, ...) that
+``load_sources()`` expands from ``${VAR}`` placeholders in sources.yaml.
+"""
 
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 from typing import Optional
 
-from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
 from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_ENV_FILE = Path(__file__).resolve().parent / ".env"
+
+# Populate os.environ from .env if it exists (no-op when the file is absent, so
+# real OS env vars / Docker env_file still work unchanged).
+load_dotenv(_ENV_FILE)
 
 
 class Settings(BaseSettings):
     """All configuration for AI Junkie Updates, sourced from env vars."""
 
-    model_config = {"env_prefix": "AIJU_"}
+    model_config = SettingsConfigDict(
+        env_prefix="AIJU_",
+        env_file=str(_ENV_FILE),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # Required
     ANTHROPIC_API_KEY: str = ""
