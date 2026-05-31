@@ -312,15 +312,31 @@ async def test_regulatory():
 
 
 async def test_twitter():
+    import os
     from ai_junkie_updates.agents.twitter.agent import TwitterAgent
     cache._store.clear()
-    with _mocked_http(lambda u: {"json": TWITTER_JSON}):
-        items = await TwitterAgent().collect()
+    # sources.yaml stores the bearer token as ${TWITTER_BEARER_TOKEN}; setting the
+    # env var also exercises load_sources()'s placeholder expansion.
+    os.environ["TWITTER_BEARER_TOKEN"] = "test-bearer"
+    try:
+        with _mocked_http(lambda u: {"json": TWITTER_JSON}):
+            items = await TwitterAgent().collect()
+    finally:
+        os.environ.pop("TWITTER_BEARER_TOKEN", None)
     ok = len(items) >= 1 and all(i.source_type == SourceType.TWITTER for i in items)
-    _check("twitter parses API v2 search response", ok, f"{len(items)} item(s)")
+    _check("twitter parses API v2 search response (env token expanded)", ok, f"{len(items)} item(s)")
     _check("twitter resolves author username + builds tweet url",
            bool(items) and "OpenAI" in items[0].source_name
            and "status/t1" in items[0].source_url)
+
+
+async def test_twitter_no_token():
+    from ai_junkie_updates.agents.twitter.agent import TwitterAgent
+    cache._store.clear()
+    # No env var set -> ${TWITTER_BEARER_TOKEN} expands to "" -> agent short-circuits.
+    with _mocked_http(lambda u: {"json": TWITTER_JSON}):
+        items = await TwitterAgent().collect()
+    _check("twitter returns nothing when bearer token unset", items == [], f"{len(items)} item(s)")
 
 
 async def test_onchain():
@@ -391,7 +407,8 @@ async def test_discord():
 TESTS = [
     test_rss, test_github, test_reddit, test_web_scraper, test_podcast,
     test_changelog, test_press_releases, test_regulatory, test_twitter,
-    test_onchain, test_api_feed, test_telegram_channels, test_discord,
+    test_twitter_no_token, test_onchain, test_api_feed, test_telegram_channels,
+    test_discord,
 ]
 
 

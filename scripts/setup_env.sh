@@ -49,5 +49,9 @@ python -c "import feedparser, sgmllib, _cffi_backend; import ai_junkie_updates.m
 echo "==> Running offline tests"
 python tests/test_pipeline_offline.py
 python tests/test_agents_offline.py
+python tests/test_preflight_offline.py
 
 echo "==> Setup complete"
+echo
+echo "Next: check live-readiness (credentials + source reachability) with:"
+echo "    python -m ai_junkie_updates.preflight"

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+import os
+import re
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List
@@ -22,13 +24,35 @@ CONFIG_DIR = Path(__file__).resolve().parent.parent / "config"
 
 log = get_logger(__name__)
 
+_ENV_PLACEHOLDER = re.compile(r"\$\{([A-Z0-9_]+)\}")
+
+
+def _expand_env(value: Any) -> Any:
+    """Recursively expand ${VAR} placeholders in strings using os.environ.
+
+    sources.yaml stores secrets as ``${TWITTER_BEARER_TOKEN}`` etc. Without
+    expansion the literal placeholder string is passed to the API, so the
+    credential never applies. Unset variables expand to "" so each agent's
+    existing "no token" guard short-circuits cleanly.
+    """
+    if isinstance(value, str):
+        return _ENV_PLACEHOLDER.sub(lambda m: os.environ.get(m.group(1), ""), value)
+    if isinstance(value, list):
+        return [_expand_env(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _expand_env(v) for k, v in value.items()}
+    return value
+
 
 def load_sources(agent_key: str) -> List[Dict[str, Any]]:
-    """Load the source list for a given agent from sources.yaml."""
+    """Load the source list for a given agent from sources.yaml.
+
+    ``${VAR}`` placeholders are expanded from the environment.
+    """
     sources_path = CONFIG_DIR / "sources.yaml"
     with open(sources_path, "r") as fh:
         data = yaml.safe_load(fh) or {}
-    return data.get(agent_key, [])
+    return _expand_env(data.get(agent_key, []))
 
 
 def load_watchlist() -> List[str]:

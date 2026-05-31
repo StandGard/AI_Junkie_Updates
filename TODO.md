@@ -27,7 +27,9 @@
 
 ### Testing
 - [x] Offline pipeline test (`tests/test_pipeline_offline.py`) — normalize → dedupe (real SQLite) → filter (all tiers) → format → route, 17 checks, no network
-- [x] Per-agent collect() tests with mocked HTTP (`tests/test_agents_offline.py`) — all 13 agents, 29 checks, no network
+- [x] Per-agent collect() tests with mocked HTTP (`tests/test_agents_offline.py`) — all 13 agents, 30 checks, no network
+- [x] Live-readiness preflight (`python -m ai_junkie_updates.preflight`) + tests (`tests/test_preflight_offline.py`, 13 checks) — credential + per-source reachability report with GO/NO-GO verdict
+- [x] Fix: `load_sources()` now expands `${VAR}` placeholders from env (Twitter/api_feed keys were dead before)
 - [x] Reproducible setup script (`scripts/setup_env.sh`) — deps + sgmllib/cffi/PyYAML workarounds
 - [ ] Unit tests for pipeline stages (normalizer, deduplicator, filter engine)
 - [ ] Unit tests for core modules (cache, database, models)

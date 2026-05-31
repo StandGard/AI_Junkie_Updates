@@ -40,7 +40,9 @@
 - `bash scripts/setup_env.sh` — installs deps + applies both build workarounds, verifies imports, runs the offline test.
 - `import ai_junkie_updates.main` succeeds.
 - `python tests/test_pipeline_offline.py` — 17/17 (normalize, dedupe w/ real SQLite, filter tiers, formatter, router batching + persistence).
-- `python tests/test_agents_offline.py` — 29/29 (all 13 agents' collect() parsing paths, mocked HTTP, dedupe-on-re-poll).
+- `python tests/test_agents_offline.py` — 30/30 (all 13 agents' collect() parsing paths, mocked HTTP, dedupe-on-re-poll, env-token expansion).
+- `python tests/test_preflight_offline.py` — 13/13 (credential checks, source grouping, GO/NO-GO verdict).
+- `python -m ai_junkie_updates.preflight` — live-readiness report: checks credentials + probes every configured source, prints GO/NO-GO. (In this sandbox: NO-GO — keys missing, sources allowlist-blocked except `api.github.com`, which it correctly flags reachable.)
 
 ## Architecture Quick Reference
 
@@ -101,13 +103,18 @@ These are module-level instances created at import time (with lazy initializatio
 
 5. **Allowlist network policy (web/sandbox)**: outbound HTTP is blocked except the package registry, so all agents return 0 items and Claude/Telegram calls fail (`403 Host not in allowlist` / connection errors). This is the environment's network policy, *not* a code bug. Run live in an environment configured with outbound egress. See https://code.claude.com/docs/en/claude-code-on-the-web for network-policy options.
 
-> **Setup shortcut**: `bash scripts/setup_env.sh` applies #1, #2, and #4 automatically, then verifies imports and runs the offline test.
+6. **`${VAR}` placeholders in sources.yaml** (fixed): `load_sources()` returned secrets like `${TWITTER_BEARER_TOKEN}` / `${CRUNCHBASE_API_KEY}` as literal strings, so those credentials never applied. Fixed: `load_sources()` now recursively expands `${VAR}` from the environment (unset → `""`, so each agent's "no token" guard short-circuits cleanly). Twitter and api_feed keys are read from the OS environment, *not* the `AIJU_` prefix.
+
+> **Setup shortcut**: `bash scripts/setup_env.sh` applies #1, #2, and #4 automatically, then verifies imports and runs the offline tests.
 
 ## Development Commands
 
 ```bash
 # Verify all imports
 python -c "import ai_junkie_updates.main"
+
+# Check live-readiness (credentials + per-source reachability, GO/NO-GO)
+python -m ai_junkie_updates.preflight
 
 # Run the system
 python -m ai_junkie_updates.main
