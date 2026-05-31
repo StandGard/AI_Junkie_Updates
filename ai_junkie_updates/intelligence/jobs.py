@@ -25,7 +25,7 @@ from typing import List, Optional
 
 from ai_junkie_updates.intelligence.clustering import clusterer
 from ai_junkie_updates.intelligence.entity_linker import entity_linker
-from ai_junkie_updates.intelligence.ingest import openrouter_ingestor
+from ai_junkie_updates.intelligence.ingest import benchmark_ingestor, openrouter_ingestor
 from ai_junkie_updates.intelligence.knowledge_base import knowledge_base
 from ai_junkie_updates.intelligence.ranking_engine import ranking_engine
 from ai_junkie_updates.intelligence.synthesis import synthesizer
@@ -64,12 +64,18 @@ class IntelligenceJobs:
         return {"link": link, "cluster": cluster}
 
     async def run_ingest(self) -> dict:
-        """Refresh structured KB data (model pricing/context) from OpenRouter."""
-        return await openrouter_ingestor.run_once()
+        """Refresh structured KB data: OpenRouter pricing + benchmark scores.
+
+        Both are fail-soft; benchmark leaderboards are fragile (no official API)
+        so a parse/fetch failure simply leaves the last good scores in place.
+        """
+        prices = await openrouter_ingestor.run_once()
+        benches = await benchmark_ingestor.run_once()
+        return {"prices": prices, "benchmarks": benches}
 
     async def run_ranking(self) -> dict:
-        # Refresh pricing/context just before recomputing rankings so the value
-        # board reflects the latest prices.
+        # Refresh pricing + benchmark scores just before recomputing rankings so
+        # every leaderboard reflects the latest available data.
         await self.run_ingest()
         return await ranking_engine.run_once()
 
