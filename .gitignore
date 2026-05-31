@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Environment / secrets
+.env
+.env.local
+
+# Local data — SQLite databases (keep the dir via .gitkeep)
+storage/*.db
+storage/*.db-journal
+storage/*.db-wal
+storage/*.db-shm
+
+# OS
+.DS_Store
