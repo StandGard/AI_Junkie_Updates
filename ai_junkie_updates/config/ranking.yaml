@@ -1,0 +1,89 @@
+# =============================================================
+# AI Junkie Updates — Ranking Configuration
+# =============================================================
+# Controls how per-use-case leaderboards are computed. Edit freely — the ranking
+# engine reloads this on each run. Each use-case blends up to three deterministic
+# signals, then (optionally) attaches a one-line rationale per model:
+#
+#   final_score = w_benchmark * benchmark_component
+#               + w_recency   * recency_component
+#               + w_price     * price_component        (price favours cheaper)
+#
+# Weights per use-case need not sum to 1 (they are normalised internally). The
+# `benchmarks` list selects which benchmark slugs (from the KB `benchmarks`
+# table) feed that use-case's benchmark_component; scores are min-max normalised
+# across the candidate models before weighting.
+# =============================================================
+
+# Half-life (days) for the recency signal: a model released `half_life_days` ago
+# scores 0.5 on recency, decaying exponentially. Keeps brand-new releases visible.
+recency_half_life_days: 120
+
+defaults:
+  w_benchmark: 0.6
+  w_recency: 0.25
+  w_price: 0.15
+
+use_cases:
+  overall:
+    benchmarks: [lmarena-overall]
+    w_benchmark: 0.65
+    w_recency: 0.25
+    w_price: 0.10
+
+  coding:
+    benchmarks: [swe-bench-verified, aider-polyglot]
+    w_benchmark: 0.7
+    w_recency: 0.2
+    w_price: 0.1
+
+  agents:
+    benchmarks: [tau-bench, swe-bench-verified]
+    w_benchmark: 0.7
+    w_recency: 0.25
+    w_price: 0.05
+
+  app_dev:
+    benchmarks: [swe-bench-verified, aider-polyglot]
+    w_benchmark: 0.6
+    w_recency: 0.25
+    w_price: 0.15
+
+  automation:
+    benchmarks: [tau-bench]
+    w_benchmark: 0.55
+    w_recency: 0.2
+    w_price: 0.25
+
+  content:
+    benchmarks: [lmarena-overall]
+    w_benchmark: 0.5
+    w_recency: 0.3
+    w_price: 0.2
+
+  video:
+    # Few public benchmarks for video; lean on recency + curated capability notes.
+    benchmarks: []
+    w_benchmark: 0.0
+    w_recency: 0.6
+    w_price: 0.4
+
+  research:
+    benchmarks: [gpqa-diamond, mmlu-pro]
+    w_benchmark: 0.7
+    w_recency: 0.2
+    w_price: 0.1
+
+  business:
+    benchmarks: [lmarena-overall, mmlu-pro]
+    w_benchmark: 0.5
+    w_recency: 0.2
+    w_price: 0.3
+
+  value:
+    # Value-for-money: performance per dollar — price dominates, anchored by
+    # overall quality.
+    benchmarks: [lmarena-overall]
+    w_benchmark: 0.45
+    w_recency: 0.1
+    w_price: 0.45
