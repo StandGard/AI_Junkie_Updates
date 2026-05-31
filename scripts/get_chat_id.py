@@ -31,15 +31,39 @@ can actually reach Telegram.
 """
 from __future__ import annotations
 
+import os
 import sys
+from pathlib import Path
+
+# When run as `python scripts/get_chat_id.py`, sys.path[0] is the scripts/
+# directory, so the package import below would fail. Put the repo root first.
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+
+def _token_from_env_file() -> str:
+    """Read AIJU_TELEGRAM_BOT_TOKEN straight from ai_junkie_updates/.env.
+
+    Fallback for when the package can't be imported: settings normally loads
+    the .env, but if that import fails we still want the token.
+    """
+    env_path = REPO_ROOT / "ai_junkie_updates" / ".env"
+    if not env_path.exists():
+        return ""
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if line.startswith("AIJU_TELEGRAM_BOT_TOKEN=") and "=" in line:
+            return line.split("=", 1)[1].strip()
+    return ""
+
 
 try:
     # Reuse the app's settings so token loading matches the real system.
     from ai_junkie_updates.settings import settings
     token = settings.TELEGRAM_BOT_TOKEN
 except Exception:  # pragma: no cover - fallback if run outside the package
-    import os
-    token = os.environ.get("AIJU_TELEGRAM_BOT_TOKEN", "")
+    token = os.environ.get("AIJU_TELEGRAM_BOT_TOKEN", "") or _token_from_env_file()
 
 if not token:
     print("ERROR: AIJU_TELEGRAM_BOT_TOKEN is not set (checked settings + env).")
