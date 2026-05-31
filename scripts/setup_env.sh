@@ -46,7 +46,8 @@ fi
 echo "==> Verifying imports"
 python -c "import feedparser, sgmllib, _cffi_backend; import ai_junkie_updates.main; print('imports OK')"
 
-echo "==> Running offline pipeline test"
+echo "==> Running offline tests"
 python tests/test_pipeline_offline.py
+python tests/test_agents_offline.py
 
 echo "==> Setup complete"

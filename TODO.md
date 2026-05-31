@@ -27,6 +27,7 @@
 
 ### Testing
 - [x] Offline pipeline test (`tests/test_pipeline_offline.py`) — normalize → dedupe (real SQLite) → filter (all tiers) → format → route, 17 checks, no network
+- [x] Per-agent collect() tests with mocked HTTP (`tests/test_agents_offline.py`) — all 13 agents, 29 checks, no network
 - [x] Reproducible setup script (`scripts/setup_env.sh`) — deps + sgmllib/cffi/PyYAML workarounds
 - [ ] Unit tests for pipeline stages (normalizer, deduplicator, filter engine)
 - [ ] Unit tests for core modules (cache, database, models)

@@ -18,6 +18,7 @@
 
 ### What's Done
 - 72 source files (~3,600 lines of Python) — fully implemented, no stubs
+- Offline test coverage: pipeline (17 checks) + all 13 agents' parsing paths (29 checks), no network/keys needed
 - 13 async source agents (Twitter, RSS, Web Scraper, Changelog, GitHub, Reddit, Discord, Onchain, Telegram Channels, Press Releases, Podcast, Regulatory, API Feed)
 - Full pipeline: collect → normalize → deduplicate → analyze (Claude AI) → filter → route → deliver
 - Telegram delivery with 4 channels (Critical/High/General/Watchlist), rate limiting, HTML formatting
@@ -28,7 +29,7 @@
 - TODO.md with completed items and backlog
 
 ### What's NOT Done
-- Minimal tests: one offline pipeline test (`tests/test_pipeline_offline.py`, 17 checks, all green). No per-agent or live e2e tests yet.
+- Tests are offline only: pipeline (`tests/test_pipeline_offline.py`, 17 checks) + per-agent parsing (`tests/test_agents_offline.py`, 29 checks), all green. No live e2e test yet (needs egress + keys).
 - **No verified live run.** Agents/Claude/Telegram have never been exercised against real endpoints. In the web/sandbox environment the network policy is an allowlist (only the package registry is reachable — confirmed: `pypi.org`→200, `reddit.com`→403 "Host not in allowlist"), and no API keys are configured. A real run needs an environment with outbound egress + credentials.
 - No Docker/CI/CD
 - No web dashboard or REST API
@@ -39,6 +40,7 @@
 - `bash scripts/setup_env.sh` — installs deps + applies both build workarounds, verifies imports, runs the offline test.
 - `import ai_junkie_updates.main` succeeds.
 - `python tests/test_pipeline_offline.py` — 17/17 (normalize, dedupe w/ real SQLite, filter tiers, formatter, router batching + persistence).
+- `python tests/test_agents_offline.py` — 29/29 (all 13 agents' collect() parsing paths, mocked HTTP, dedupe-on-re-poll).
 
 ## Architecture Quick Reference
 
