@@ -30,12 +30,15 @@ class Deduplicator:
             log.debug("duplicate_found_cache", fingerprint=fp, item_id=raw_item.id)
             return True
 
-        # Slow path: database
-        if await db.fingerprint_exists(fp):
+        # Slow path: database. Check both the delivered/dropped records and the
+        # persistent seen-set, which survives restarts so feed re-emissions are
+        # never re-analyzed by Claude.
+        if await db.fingerprint_exists(fp) or await db.seen_fingerprint_exists(fp):
             cache.set(cache_key, True, ttl=FINGERPRINT_TTL)
             log.debug("duplicate_found_db", fingerprint=fp, item_id=raw_item.id)
             return True
 
-        # Not a duplicate — store in cache
+        # First sighting — record it persistently and cache it.
+        await db.mark_fingerprint_seen(fp)
         cache.set(cache_key, True, ttl=FINGERPRINT_TTL)
         return False

@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from ai_junkie_updates.constants import DeliveryChannel, PipelineStatus
-from ai_junkie_updates.core.models import Base, UpdateItem, UpdateRecord
+from ai_junkie_updates.core.models import Base, SeenFingerprint, UpdateItem, UpdateRecord
 from ai_junkie_updates.settings import settings
 from ai_junkie_updates.utils.logger import get_logger
 
@@ -94,6 +94,23 @@ class DatabaseManager:
             ).limit(1)
             result = await session.execute(stmt)
             return result.scalar_one_or_none() is not None
+
+    async def seen_fingerprint_exists(self, fingerprint: str) -> bool:
+        """Check the persistent seen-set (survives restarts) for a fingerprint."""
+        async with self._session_factory() as session:
+            return await session.get(SeenFingerprint, fingerprint) is not None
+
+    async def mark_fingerprint_seen(self, fingerprint: str) -> None:
+        """Record a fingerprint in the persistent seen-set (idempotent, race-safe)."""
+        async with self._session_factory() as session:
+            if await session.get(SeenFingerprint, fingerprint) is not None:
+                return
+            session.add(SeenFingerprint(fingerprint=fingerprint))
+            try:
+                await session.commit()
+            except Exception:
+                # Another agent inserted the same fingerprint concurrently — fine.
+                await session.rollback()
 
     async def close(self) -> None:
         """Dispose of the engine connection pool."""

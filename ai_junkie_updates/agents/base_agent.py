@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import asyncio
+import importlib
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import yaml
 
-from ai_junkie_updates.constants import SourceType, PipelineStatus
+from ai_junkie_updates.constants import POLL_INTERVALS, SourceType, PipelineStatus
 from ai_junkie_updates.core.claude_client import claude_client
 from ai_junkie_updates.core.models import RawItem
 from ai_junkie_updates.pipeline.deduplicator import Deduplicator
@@ -53,13 +54,27 @@ class BaseAgent(ABC):
     ) -> None:
         self.source_type = source_type
         self.source_name = source_name
-        self.poll_interval = poll_interval_seconds
+        # Per-source interval override, falling back to the passed default.
+        self.poll_interval = POLL_INTERVALS.get(source_name, poll_interval_seconds)
         self._normalizer = Normalizer()
         self._deduplicator = Deduplicator()
         self._filter_engine = FilterEngine()
         self._watchlist = load_watchlist()
+        # Source-specific analysis guidance appended to the master system prompt.
+        self.context_prompt = self._load_context_prompt()
         self._running = True
         self.log = get_logger(f"agent.{source_name}")
+
+    def _load_context_prompt(self) -> Optional[str]:
+        """Load this agent's AGENT_CONTEXT_PROMPT from its sibling prompt module."""
+        # e.g. ai_junkie_updates.agents.rss.agent -> ai_junkie_updates.agents.rss.prompt
+        prompt_module = type(self).__module__.rsplit(".", 1)[0] + ".prompt"
+        try:
+            mod = importlib.import_module(prompt_module)
+            prompt = getattr(mod, "AGENT_CONTEXT_PROMPT", None)
+            return prompt.strip() if isinstance(prompt, str) and prompt.strip() else None
+        except Exception:
+            return None
 
     @abstractmethod
     async def collect(self) -> List[RawItem]:
@@ -92,13 +107,20 @@ class BaseAgent(ABC):
                 update={"metadata": {**raw_item.metadata, "pipeline": PipelineStatus.NORMALIZED.value}}
             )
 
+            # Pre-LLM relevance gate — drop obvious noise before spending a Claude call
+            if not self._filter_engine.passes_pre_llm_gate(raw_item):
+                self.log.debug("item_pre_filtered", item_id=raw_item.id)
+                return
+
             # Deduplicate
             if await self._deduplicator.is_duplicate(raw_item):
                 self.log.debug("item_duplicate", item_id=raw_item.id)
                 return
 
             # Analyze via Claude
-            update_item = await claude_client.analyze(raw_item)
+            update_item = await claude_client.analyze(
+                raw_item, context_prompt=self.context_prompt
+            )
 
             # Filter
             should_deliver, channel = self._filter_engine.should_deliver(

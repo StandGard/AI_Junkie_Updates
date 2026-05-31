@@ -13,15 +13,16 @@ twitter:
       - GoogleDeepMind
       - MetaAI
       - MistralAI
-      - xaborai           # xAI
+      - xai               # xAI
       - CohereAI
       - AI21Labs
       - huggingface
       - StabilityAI
-      - midaborjourney
+      - midjourney
       - runwayml
-      - elevaborenlabs
-      - peraborplexity_ai
+      - elevenlabs
+      - perplexity_ai
+      - deepseek_ai
     search_terms:
       - "AI model release"
       - "model launch"

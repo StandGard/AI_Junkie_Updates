@@ -91,3 +91,27 @@ SCORE_IMPORTANT = 70
 SCORE_WORTH_KNOWING = 50
 SCORE_WATCHLIST = 40
 SCORE_NOISE = 0
+
+
+# ---------------------------------------------------------------------------
+# Per-source poll intervals (seconds)
+# ---------------------------------------------------------------------------
+# Keyed by agent source_name. Agents fall back to settings.POLL_INTERVAL_SECONDS
+# when their source_name is absent here. Slower polling on low-velocity sources
+# also reduces the number of triage LLM calls.
+
+POLL_INTERVALS = {
+    "discord": 300,        # push receiver — collect() just drains the inbox
+    "rss": 900,
+    "github": 900,
+    "changelog": 900,
+    "web_scraper": 1800,
+    "twitter": 1800,
+    "reddit": 1800,
+    "onchain": 1800,
+    "telegram_channels": 1800,
+    "press_releases": 3600,
+    "regulatory": 3600,
+    "podcast": 3600,
+    "api_feed": 3600,
+}

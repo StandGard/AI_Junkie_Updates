@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     TELEGRAM_CHANNEL_GENERAL: str = ""
     TELEGRAM_CHANNEL_WATCHLIST: str = ""
 
+    # Personal chat ID — restricts interactive bot commands to the owner (Phase 2)
+    TELEGRAM_ADMIN_CHAT_ID: str = ""
+
     # Optional with defaults
     DATABASE_URL: str = "sqlite+aiosqlite:///storage/aiju.db"
     CACHE_TTL_SECONDS: int = 86400
@@ -29,7 +32,10 @@ class Settings(BaseSettings):
     SCORE_THRESHOLD_WATCHLIST: int = 40
     POLL_INTERVAL_SECONDS: int = 300
     MAX_CONCURRENT_AGENTS: int = 5
-    CLAUDE_MODEL: str = "claude-opus-4-5"
+    # Model tiering: a cheap model handles per-item triage (the bulk of calls);
+    # a stronger model is reserved for periodic synthesis/digests (Phase 1).
+    CLAUDE_TRIAGE_MODEL: str = "claude-haiku-4-5-20251001"
+    CLAUDE_SYNTHESIS_MODEL: str = "claude-sonnet-4-6"
     LOG_LEVEL: str = "INFO"
 
     def validate_required(self) -> None:

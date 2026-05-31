@@ -154,3 +154,17 @@ class UpdateRecord(Base):
             delivered_at=item.delivered_at,
             fingerprint=item.fingerprint,
         )
+
+
+class SeenFingerprint(Base):
+    """Persistent record that a content fingerprint has been seen.
+
+    Written at first sighting (before analysis) so that feed re-emissions after a
+    process restart are recognised as duplicates and never re-sent to Claude. The
+    in-memory cache is wiped on restart; this table survives it.
+    """
+
+    __tablename__ = "seen_fingerprints"
+
+    fingerprint = Column(String, primary_key=True)
+    seen_at = Column(DateTime, nullable=False, default=_utcnow)
