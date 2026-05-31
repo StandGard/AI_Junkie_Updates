@@ -115,6 +115,99 @@ class DatabaseManager:
             result = await session.execute(stmt)
             return [row.to_update_item() for row in result.scalars().all()]
 
+    async def get_unlinked_items(self, hours: int = 48, limit: int = 200) -> list[dict]:
+        """Return recent items not yet entity-linked (``entity_ids IS NULL``).
+
+        Returns lightweight dicts (not ORM rows) so callers can work outside the
+        session. Items are returned regardless of relevance and marked once via
+        ``set_item_entities`` so they are never re-scanned.
+        """
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+        async with self._session_factory() as session:
+            stmt = (
+                select(UpdateRecord)
+                .where(
+                    UpdateRecord.entity_ids.is_(None),
+                    UpdateRecord.analyzed_at >= cutoff,
+                )
+                .order_by(UpdateRecord.analyzed_at.desc())
+                .limit(limit)
+            )
+            rows = (await session.execute(stmt)).scalars().all()
+            return [
+                {
+                    "id": r.id,
+                    "source_name": r.source_name,
+                    "source_type": r.source_type,
+                    "headline": r.headline,
+                    "summary": r.summary,
+                    "tags": r.tags.split(",") if r.tags else [],
+                    "category": r.category,
+                    "score": r.score,
+                    "is_relevant": r.is_relevant,
+                    "analyzed_at": r.analyzed_at,
+                }
+                for r in rows
+            ]
+
+    async def set_item_entities(self, item_id: str, entity_ids_json: str) -> None:
+        """Persist the JSON-encoded entity-link result onto an update row."""
+        async with self._session_factory() as session:
+            rec = await session.get(UpdateRecord, item_id)
+            if rec is not None:
+                rec.entity_ids = entity_ids_json
+                await session.commit()
+
+    async def get_linked_items(
+        self, hours: int = 48, limit: int = 500, eventless_only: bool = False
+    ) -> list[dict]:
+        """Return recent entity-linked items, with ``entity_ids`` parsed from JSON.
+
+        Used by clustering. When ``eventless_only`` is True, only items not yet
+        assigned to an event (``event_id IS NULL``) are returned.
+        """
+        import json as _json
+
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+        async with self._session_factory() as session:
+            stmt = select(UpdateRecord).where(
+                UpdateRecord.entity_ids.is_not(None),
+                UpdateRecord.analyzed_at >= cutoff,
+            )
+            if eventless_only:
+                stmt = stmt.where(UpdateRecord.event_id.is_(None))
+            stmt = stmt.order_by(UpdateRecord.analyzed_at.desc()).limit(limit)
+            rows = (await session.execute(stmt)).scalars().all()
+            out = []
+            for r in rows:
+                try:
+                    entities = _json.loads(r.entity_ids) if r.entity_ids else {}
+                except (ValueError, TypeError):
+                    entities = {}
+                out.append(
+                    {
+                        "id": r.id,
+                        "source_name": r.source_name,
+                        "headline": r.headline,
+                        "summary": r.summary,
+                        "tags": r.tags.split(",") if r.tags else [],
+                        "category": r.category,
+                        "score": r.score,
+                        "is_relevant": r.is_relevant,
+                        "analyzed_at": r.analyzed_at,
+                        "entities": entities,
+                    }
+                )
+            return out
+
+    async def set_item_event(self, item_id: str, event_id: str) -> None:
+        """Link an update row to a clustered event."""
+        async with self._session_factory() as session:
+            rec = await session.get(UpdateRecord, item_id)
+            if rec is not None:
+                rec.event_id = event_id
+                await session.commit()
+
     async def fingerprint_exists(self, fingerprint: str) -> bool:
         """Check whether a fingerprint already exists in the database."""
         async with self._session_factory() as session:
