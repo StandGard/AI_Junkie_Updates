@@ -1,8 +1,16 @@
 # AI Junkie Updates — Full Mind Map
 
 > A complete map of the project: its purpose, architecture, every component, how
-> data flows, and its current development stage. Derived directly from the
-> codebase (~3,000 lines across 72 files).
+> data flows, and its current development stage.
+>
+> **⚠️ Update (2026-05-31):** This map describes the original 13-agent collection
+> core, which is still accurate. The project has since grown into a full **AI
+> performance advisor** — adding an intelligence layer (knowledge base, entity
+> linking, story clustering, a ranking engine, and advisor synthesis), an
+> interactive Telegram command bot, live pricing/benchmark ingestion, a 42-test
+> suite, Docker, and a health server. For the current architecture see
+> `README.md` and `CLAUDE.md`; the "Development stage" notes below are superseded
+> (all four build phases are complete — see `TODO.md`).
 
 ---
 
