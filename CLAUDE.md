@@ -28,11 +28,17 @@
 - TODO.md with completed items and backlog
 
 ### What's NOT Done
-- No tests (unit, integration, or e2e)
+- Minimal tests: one offline pipeline test (`tests/test_pipeline_offline.py`, 17 checks, all green). No per-agent or live e2e tests yet.
+- **No verified live run.** Agents/Claude/Telegram have never been exercised against real endpoints. In the web/sandbox environment the network policy is an allowlist (only the package registry is reachable — confirmed: `pypi.org`→200, `reddit.com`→403 "Host not in allowlist"), and no API keys are configured. A real run needs an environment with outbound egress + credentials.
 - No Docker/CI/CD
 - No web dashboard or REST API
 - No database migrations (Alembic)
 - PDF project overview document (fpdf2 installed but script not written)
+
+### Verified working (this environment)
+- `bash scripts/setup_env.sh` — installs deps + applies both build workarounds, verifies imports, runs the offline test.
+- `import ai_junkie_updates.main` succeeds.
+- `python tests/test_pipeline_offline.py` — 17/17 (normalize, dedupe w/ real SQLite, filter tiers, formatter, router batching + persistence).
 
 ## Architecture Quick Reference
 
@@ -88,6 +94,12 @@ These are module-level instances created at import time (with lazy initializatio
 2. **cffi/_cffi_backend missing**: python-telegram-bot needs cryptography which needs cffi. Fix: `pip install cffi cryptography`.
 
 3. **Token validation at import**: Both `telegram.Bot()` and `anthropic.AsyncAnthropic()` validate tokens on construction. Since module-level singletons are created at import time, empty tokens cause crashes. Fix: lazy initialization via `_ensure_bot()` and `_ensure_client()` methods.
+
+4. **pip can't uninstall Debian system packages**: `pip install -r requirements.txt` aborts with `Cannot uninstall PyYAML 6.0.1, RECORD file not found` because PyYAML is OS-managed. Fix: install with `--ignore-installed` (baked into `scripts/setup_env.sh`).
+
+5. **Allowlist network policy (web/sandbox)**: outbound HTTP is blocked except the package registry, so all agents return 0 items and Claude/Telegram calls fail (`403 Host not in allowlist` / connection errors). This is the environment's network policy, *not* a code bug. Run live in an environment configured with outbound egress. See https://code.claude.com/docs/en/claude-code-on-the-web for network-policy options.
+
+> **Setup shortcut**: `bash scripts/setup_env.sh` applies #1, #2, and #4 automatically, then verifies imports and runs the offline test.
 
 ## Development Commands
 

@@ -21,10 +21,13 @@
 ## In Progress
 
 - [ ] PDF project overview document (fpdf2 installed, script not yet written)
+- [ ] Live end-to-end run — blocked in web/sandbox by allowlist network policy + no credentials; needs an environment with outbound egress and API keys set
 
 ## Backlog — Next Steps
 
 ### Testing
+- [x] Offline pipeline test (`tests/test_pipeline_offline.py`) — normalize → dedupe (real SQLite) → filter (all tiers) → format → route, 17 checks, no network
+- [x] Reproducible setup script (`scripts/setup_env.sh`) — deps + sgmllib/cffi/PyYAML workarounds
 - [ ] Unit tests for pipeline stages (normalizer, deduplicator, filter engine)
 - [ ] Unit tests for core modules (cache, database, models)
 - [ ] Integration tests for agent collect() methods with mocked HTTP
