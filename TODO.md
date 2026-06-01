@@ -28,9 +28,11 @@
 - [x] Unit tests for pipeline stages (normalizer, deduplicator, filter engine)
 - [x] Unit tests for core modules (cache, models) + base_agent helpers, formatter
 - [x] Test configuration for pytest + pytest-asyncio (pytest.ini, requirements-dev.txt)
-- [ ] Unit tests for the database manager (async SQLAlchemy)
-- [ ] Integration tests for agent collect() methods with mocked HTTP
-- [ ] End-to-end pipeline test with mock Claude responses
+- [x] Unit tests for the database manager (async SQLAlchemy, in-memory SQLite)
+- [x] Integration tests for agent collect() methods with mocked HTTP (aioresponses)
+- [x] End-to-end pipeline test with mock Claude responses (scripts + full pipeline)
+- [x] Live dry-run harness (scripts/dry_run.py) — collect-only, no Claude/Telegram
+- [ ] Coverage reporting (pytest-cov) in CI
 
 ### Infrastructure
 - [ ] Dockerfile and docker-compose.yml for containerized deployment

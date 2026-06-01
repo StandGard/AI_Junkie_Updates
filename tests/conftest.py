@@ -23,7 +23,20 @@ from ai_junkie_updates.constants import (  # noqa: E402
     UpdateCategory,
     UrgencyLevel,
 )
+from ai_junkie_updates.core.cache import cache as _global_cache  # noqa: E402
 from ai_junkie_updates.core.models import RawItem, UpdateItem  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _isolate_cache():
+    """Clear the module-level singleton cache before and after each test.
+
+    The cache is a process-wide singleton; without this, dedup state leaks
+    between tests and makes them order-dependent.
+    """
+    _global_cache._store.clear()
+    yield
+    _global_cache._store.clear()
 
 
 def make_raw_item(

@@ -2,21 +2,12 @@
 
 from __future__ import annotations
 
-import pytest
-
-from ai_junkie_updates.core.cache import cache
 from ai_junkie_updates.pipeline import deduplicator as dedup_mod
 from ai_junkie_updates.pipeline.deduplicator import Deduplicator
 
 from tests.conftest import make_raw_item
 
-
-@pytest.fixture(autouse=True)
-def _clear_cache():
-    # Each test starts with a clean cache.
-    cache._store.clear()
-    yield
-    cache._store.clear()
+# Cache isolation is handled by the autouse _isolate_cache fixture in conftest.
 
 
 async def test_first_sighting_not_duplicate(monkeypatch):

@@ -68,6 +68,29 @@ python -m ai_junkie_updates.main
 
 The system starts all 13 agents concurrently (limited by `AIJU_MAX_CONCURRENT_AGENTS`, default 5) and runs continuously until interrupted with Ctrl+C or SIGTERM.
 
+### Dry run (collect only, no Claude/Telegram)
+
+To confirm that real sources parse correctly without spending Claude tokens or
+sending Telegram messages:
+
+```bash
+python -m scripts.dry_run                 # every agent, once
+python -m scripts.dry_run rss github      # specific agents
+python -m scripts.dry_run --preview 200 rss
+```
+
+## Testing
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+The suite (77 tests) covers the pipeline stages, core modules, the async
+database manager (in-memory SQLite), agent `collect()` parsing (HTTP mocked via
+aioresponses), and a full end-to-end pipeline run with Claude and Telegram
+mocked.
+
 ## Agents
 
 | Agent | Source Type | Description |
