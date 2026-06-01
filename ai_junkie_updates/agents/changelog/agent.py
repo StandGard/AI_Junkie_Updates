@@ -13,6 +13,7 @@ from ai_junkie_updates.constants import SourceType
 from ai_junkie_updates.core.cache import cache
 from ai_junkie_updates.core.models import RawItem
 from ai_junkie_updates.settings import settings
+from ai_junkie_updates.utils.fingerprint import generate_fingerprint
 
 # Patterns that commonly delimit changelog entries
 VERSION_PATTERN = re.compile(
@@ -63,7 +64,7 @@ class ChangelogAgent(BaseAgent):
                 entries = self._split_entries(text)
 
                 for entry_text in entries:
-                    entry_key = f"changelog:{name}:{hash(entry_text[:200])}"
+                    entry_key = f"changelog:{name}:{generate_fingerprint(entry_text[:200])}"
                     if cache.exists(entry_key):
                         continue
 

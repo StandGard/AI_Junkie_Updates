@@ -11,6 +11,7 @@ from ai_junkie_updates.constants import SourceType
 from ai_junkie_updates.core.cache import cache
 from ai_junkie_updates.core.models import RawItem
 from ai_junkie_updates.settings import settings
+from ai_junkie_updates.utils.fingerprint import generate_fingerprint
 
 
 class APIFeedAgent(BaseAgent):
@@ -73,7 +74,7 @@ class APIFeedAgent(BaseAgent):
                             entry_id = str(
                                 entry.get("id")
                                 or entry.get("url")
-                                or hash(str(entry)[:200])
+                                or generate_fingerprint(str(entry)[:200])
                             )
                             cache_key = f"api:{name}:{entry_id}"
                             if cache.exists(cache_key):

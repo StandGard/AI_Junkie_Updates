@@ -13,6 +13,7 @@ from ai_junkie_updates.constants import SourceType
 from ai_junkie_updates.core.cache import cache
 from ai_junkie_updates.core.models import RawItem
 from ai_junkie_updates.settings import settings
+from ai_junkie_updates.utils.fingerprint import generate_fingerprint
 
 
 class PressReleasesAgent(BaseAgent):
@@ -73,7 +74,7 @@ class PressReleasesAgent(BaseAgent):
                             link = f"{parsed.scheme}://{parsed.netloc}{href}"
 
                     body = article.get_text(separator="\n", strip=True)
-                    cache_key = f"pr:{name}:{hash(title[:100])}"
+                    cache_key = f"pr:{name}:{generate_fingerprint(title[:100])}"
                     if cache.exists(cache_key):
                         continue
 

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+
+# Test & coverage artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+.cache/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store

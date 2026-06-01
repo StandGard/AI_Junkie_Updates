@@ -1,0 +1,5 @@
+# Development & test dependencies.
+# Install the runtime deps first:  pip install -r ai_junkie_updates/requirements.txt
+# Then:                            pip install -r requirements-dev.txt
+pytest>=8.0.0,<10.0.0
+pytest-asyncio>=0.24.0,<2.0.0

@@ -11,6 +11,7 @@ from ai_junkie_updates.constants import SourceType
 from ai_junkie_updates.core.cache import cache
 from ai_junkie_updates.core.models import RawItem
 from ai_junkie_updates.settings import settings
+from ai_junkie_updates.utils.fingerprint import generate_fingerprint
 
 
 class OnchainAgent(BaseAgent):
@@ -65,7 +66,7 @@ class OnchainAgent(BaseAgent):
                             event.get("id")
                             or event.get("hash")
                             or event.get("tx_hash")
-                            or hash(str(event))
+                            or generate_fingerprint(str(event))
                         )
                         cache_key = f"onchain:{name}:{event_id}"
                         if cache.exists(cache_key):

@@ -13,6 +13,7 @@ from ai_junkie_updates.constants import SourceType
 from ai_junkie_updates.core.cache import cache
 from ai_junkie_updates.core.models import RawItem
 from ai_junkie_updates.settings import settings
+from ai_junkie_updates.utils.fingerprint import generate_fingerprint
 
 
 class RegulatoryAgent(BaseAgent):
@@ -76,7 +77,7 @@ class RegulatoryAgent(BaseAgent):
                             parsed = urlparse(url)
                             link = f"{parsed.scheme}://{parsed.netloc}{href}"
 
-                    cache_key = f"reg:{name}:{hash(title[:80] or body[:80])}"
+                    cache_key = f"reg:{name}:{generate_fingerprint(title[:80] or body[:80])}"
                     if cache.exists(cache_key):
                         continue
 
