@@ -42,7 +42,7 @@
 - [ ] REST API for querying the database (FastAPI or similar)
 - [ ] Email digest delivery option (daily/weekly summary)
 - [ ] Slack delivery channel (in addition to Telegram)
-- [ ] Agent-specific prompt injection (append AGENT_CONTEXT_PROMPT to system prompt)
+- [x] Agent-specific prompt injection (append AGENT_CONTEXT_PROMPT to system prompt)
 - [ ] Configurable scoring weights per source type
 - [ ] Historical trend analysis (score distribution over time)
 

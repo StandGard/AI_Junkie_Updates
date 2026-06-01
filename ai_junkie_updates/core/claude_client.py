@@ -40,19 +40,33 @@ class ClaudeClient:
         wait=wait_exponential(multiplier=1, min=2, max=30),
         reraise=True,
     )
-    async def _call_claude(self, user_message: str) -> str:
+    async def _call_claude(self, user_message: str, system: str = SYSTEM_PROMPT) -> str:
         """Send a message to Claude and return the text response."""
         client = self._ensure_client()
         response = await client.messages.create(
             model=self._model,
             max_tokens=1024,
-            system=SYSTEM_PROMPT,
+            system=system,
             messages=[{"role": "user", "content": user_message}],
         )
         return response.content[0].text
 
-    async def analyze(self, raw_item: RawItem) -> UpdateItem:
-        """Analyze a RawItem via Claude and return a structured UpdateItem."""
+    async def analyze(
+        self, raw_item: RawItem, context_prompt: str | None = None
+    ) -> UpdateItem:
+        """Analyze a RawItem via Claude and return a structured UpdateItem.
+
+        ``context_prompt`` is optional source-specific guidance (from an agent's
+        ``AGENT_CONTEXT_PROMPT``) appended after the global system prompt. The
+        static global prompt stays first so it remains a stable prefix.
+        """
+        system = SYSTEM_PROMPT
+        if context_prompt:
+            system = (
+                f"{SYSTEM_PROMPT}\n\n"
+                f"## SOURCE-SPECIFIC GUIDANCE\n\n{context_prompt}"
+            )
+
         user_message = (
             f"Source type: {raw_item.source_type.value}\n"
             f"Source name: {raw_item.source_name}\n"
@@ -63,7 +77,7 @@ class ClaudeClient:
         )
 
         try:
-            response_text = await self._call_claude(user_message)
+            response_text = await self._call_claude(user_message, system=system)
             data = json.loads(response_text)
             return self._parse_response(data, raw_item)
         except (json.JSONDecodeError, KeyError, ValueError) as exc:

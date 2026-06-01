@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import asyncio
+import importlib
+import os
+import re
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import yaml
 
@@ -23,12 +26,57 @@ CONFIG_DIR = Path(__file__).resolve().parent.parent / "config"
 log = get_logger(__name__)
 
 
+# Matches ${VAR} or $VAR placeholders for environment substitution.
+_ENV_VAR_PATTERN = re.compile(r"\$\{(\w+)\}|\$(\w+)")
+
+
+def _expand_env(value: Any) -> Any:
+    """Recursively expand ${VAR}/$VAR references in strings using the environment.
+
+    Credentials in sources.yaml are written as ``${TWITTER_BEARER_TOKEN}`` etc.
+    so they are not committed in plaintext. Without this expansion the literal
+    placeholder string is sent to the API. Unlike ``os.path.expandvars``, an
+    unset variable expands to an empty string so that credential-less sources
+    are correctly treated as unconfigured (and skipped) rather than sending the
+    literal placeholder.
+    """
+    if isinstance(value, str):
+        return _ENV_VAR_PATTERN.sub(
+            lambda m: os.environ.get(m.group(1) or m.group(2), ""), value
+        )
+    if isinstance(value, dict):
+        return {k: _expand_env(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_expand_env(v) for v in value]
+    return value
+
+
 def load_sources(agent_key: str) -> List[Dict[str, Any]]:
-    """Load the source list for a given agent from sources.yaml."""
+    """Load the source list for a given agent from sources.yaml.
+
+    Any ``${VAR}`` placeholders in the config are expanded from environment
+    variables so credentials can be kept out of the committed YAML.
+    """
     sources_path = CONFIG_DIR / "sources.yaml"
     with open(sources_path, "r") as fh:
         data = yaml.safe_load(fh) or {}
-    return data.get(agent_key, [])
+    return _expand_env(data.get(agent_key, []))
+
+
+def load_agent_prompt(agent_module: str) -> Optional[str]:
+    """Load the ``AGENT_CONTEXT_PROMPT`` from a sibling ``prompt`` module.
+
+    ``agent_module`` is the dotted module path of the agent (typically
+    ``type(self).__module__``, e.g. ``ai_junkie_updates.agents.twitter.agent``).
+    Returns the prompt string, or ``None`` if no prompt module/constant exists.
+    """
+    prompt_module = agent_module.rsplit(".", 1)[0] + ".prompt"
+    try:
+        module = importlib.import_module(prompt_module)
+    except ImportError:
+        return None
+    prompt = getattr(module, "AGENT_CONTEXT_PROMPT", None)
+    return prompt.strip() if isinstance(prompt, str) and prompt.strip() else None
 
 
 def load_watchlist() -> List[str]:
@@ -58,6 +106,7 @@ class BaseAgent(ABC):
         self._deduplicator = Deduplicator()
         self._filter_engine = FilterEngine()
         self._watchlist = load_watchlist()
+        self._context_prompt = load_agent_prompt(type(self).__module__)
         self._running = True
         self.log = get_logger(f"agent.{source_name}")
 
@@ -112,8 +161,10 @@ class BaseAgent(ABC):
                 self.log.debug("item_duplicate", item_id=raw_item.id)
                 return
 
-            # Analyze via Claude
-            update_item = await claude_client.analyze(raw_item)
+            # Analyze via Claude (with source-specific context guidance)
+            update_item = await claude_client.analyze(
+                raw_item, context_prompt=self._context_prompt
+            )
 
             # Filter
             should_deliver, channel = self._filter_engine.should_deliver(

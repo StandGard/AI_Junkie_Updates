@@ -3,16 +3,25 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 from typing import Optional
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
+
+# .env lives alongside this module (see .env.example), independent of CWD.
+_ENV_FILE = Path(__file__).resolve().parent / ".env"
 
 
 class Settings(BaseSettings):
     """All configuration for AI Junkie Updates, sourced from env vars."""
 
-    model_config = {"env_prefix": "AIJU_"}
+    model_config = SettingsConfigDict(
+        env_prefix="AIJU_",
+        env_file=str(_ENV_FILE),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # Required
     ANTHROPIC_API_KEY: str = ""
