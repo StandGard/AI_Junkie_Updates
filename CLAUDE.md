@@ -7,32 +7,48 @@
 
 - **Name**: AI Junkie Updates
 - **Repo**: `standgard/ai_junkie_updates` (GitHub)
-- **Branch**: `claude/setup-ai-junkie-structure-dVcM7`
+- **Branch**: `claude/nifty-gates-aiSkx`
 - **Ecosystem**: Part of the broader **Antigravity** project
 - **Language**: Python 3.11+ (full async/await)
 - **Purpose**: Real-time AI industry intelligence aggregator — monitors 13 source types, analyzes every item through Claude AI, delivers tiered alerts to Telegram channels
 
 ## Project Status
 
-**Phase**: Initial build complete. All code written and imports verified. No tests yet.
+**Phase**: Build complete and validated. Critical integration bugs fixed; full
+test suite, linting, type-checking, packaging, and CI in place.
 
 ### What's Done
-- 72 source files (~3,600 lines of Python) — fully implemented, no stubs
+- 65 Python source files (~3,170 lines) — fully implemented, no stubs
 - 13 async source agents (Twitter, RSS, Web Scraper, Changelog, GitHub, Reddit, Discord, Onchain, Telegram Channels, Press Releases, Podcast, Regulatory, API Feed)
 - Full pipeline: collect → normalize → deduplicate → analyze (Claude AI) → filter → route → deliver
 - Telegram delivery with 4 channels (Critical/High/General/Watchlist), rate limiting, HTML formatting
 - SQLite persistence via async SQLAlchemy, in-memory TTL cache for deduplication
-- YAML configuration for sources and watchlist
-- Pydantic v2 models and settings with AIJU_ env prefix
+- YAML configuration for sources and watchlist (with `${ENV_VAR}` expansion)
+- Pydantic v2 models and settings with AIJU_ env prefix (loads `.env`)
+- Per-source `AGENT_CONTEXT_PROMPT`s wired into Claude analysis
+- Test suite: 77 tests (unit, integration with mocked HTTP, e2e pipeline, async DB)
+- Tooling: ruff + mypy (both clean), pyproject.toml, requirements-dev.txt
+- Dockerfile + .dockerignore; GitHub Actions CI (lint + type-check + test)
+- `scripts/dry_run.py` — collect-only harness (no Claude/Telegram calls)
 - Wiki documentation: 13 pages in `docs/wiki/`
 - TODO.md with completed items and backlog
 
 ### What's NOT Done
-- No tests (unit, integration, or e2e)
-- No Docker/CI/CD
+- Live run against real feeds not yet performed (dry-run harness ready; this
+  cloud env's allowlist blocks arbitrary outbound hosts)
 - No web dashboard or REST API
 - No database migrations (Alembic)
-- PDF project overview document (fpdf2 installed but script not written)
+- No health-check endpoint / metrics export yet
+- PDF project overview document (not written)
+
+### Recent fixes (P0/P1/P2 — branch `claude/nifty-gates-aiSkx`)
+- P0: agent concurrency semaphore scoped to work cycles (all 13 agents run);
+  `${ENV_VAR}` expansion in sources.yaml; per-source prompts wired; `.env`
+  loading; model id → `claude-opus-4-8`
+- P1: `SCORE_THRESHOLD_*` settings wired into FilterEngine; `hash()` → xxhash
+  for cache keys; full pytest suite added
+- P2: ruff + mypy config and clean pass; pyproject.toml; Dockerfile; CI workflow;
+  doc reconciliation
 
 ## Architecture Quick Reference
 
@@ -119,7 +135,7 @@ sqlite3 ai_junkie_updates/storage/aiju.db "SELECT headline, score FROM updates O
 
 ## Git Workflow
 
-- **Branch**: `claude/setup-ai-junkie-structure-dVcM7`
+- **Branch**: `claude/nifty-gates-aiSkx`
 - **Remote**: `origin` → `standgard/ai_junkie_updates`
 - **Commit style**: `feat:`, `fix:`, `docs:`, `test:`, `chore:` prefixes
 - Always push to the feature branch, never to main directly

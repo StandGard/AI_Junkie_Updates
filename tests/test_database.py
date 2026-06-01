@@ -6,9 +6,8 @@ sessions observe the same database within a test.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
-import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
@@ -16,7 +15,6 @@ from sqlalchemy.pool import StaticPool
 from ai_junkie_updates.constants import DeliveryChannel, PipelineStatus
 from ai_junkie_updates.core.database import DatabaseManager
 from ai_junkie_updates.core.models import Base
-
 from tests.conftest import make_update_item
 
 

@@ -4,28 +4,25 @@ from __future__ import annotations
 
 import asyncio
 import signal
-import sys
 from typing import List
 
+from ai_junkie_updates.agents.api_feed.agent import APIFeedAgent
+from ai_junkie_updates.agents.changelog.agent import ChangelogAgent
+from ai_junkie_updates.agents.discord.agent import DiscordAgent
+from ai_junkie_updates.agents.github.agent import GitHubAgent
+from ai_junkie_updates.agents.onchain.agent import OnchainAgent
+from ai_junkie_updates.agents.podcast.agent import PodcastAgent
+from ai_junkie_updates.agents.press_releases.agent import PressReleasesAgent
+from ai_junkie_updates.agents.reddit.agent import RedditAgent
+from ai_junkie_updates.agents.regulatory.agent import RegulatoryAgent
+from ai_junkie_updates.agents.rss.agent import RSSAgent
+from ai_junkie_updates.agents.telegram_channels.agent import TelegramChannelsAgent
+from ai_junkie_updates.agents.twitter.agent import TwitterAgent
+from ai_junkie_updates.agents.web_scraper.agent import WebScraperAgent
 from ai_junkie_updates.bootstrap import bootstrap
 from ai_junkie_updates.pipeline.router import router
 from ai_junkie_updates.settings import settings
 from ai_junkie_updates.utils.logger import get_logger
-
-# Agent imports
-from ai_junkie_updates.agents.twitter.agent import TwitterAgent
-from ai_junkie_updates.agents.rss.agent import RSSAgent
-from ai_junkie_updates.agents.web_scraper.agent import WebScraperAgent
-from ai_junkie_updates.agents.changelog.agent import ChangelogAgent
-from ai_junkie_updates.agents.github.agent import GitHubAgent
-from ai_junkie_updates.agents.reddit.agent import RedditAgent
-from ai_junkie_updates.agents.discord.agent import DiscordAgent
-from ai_junkie_updates.agents.onchain.agent import OnchainAgent
-from ai_junkie_updates.agents.telegram_channels.agent import TelegramChannelsAgent
-from ai_junkie_updates.agents.press_releases.agent import PressReleasesAgent
-from ai_junkie_updates.agents.podcast.agent import PodcastAgent
-from ai_junkie_updates.agents.regulatory.agent import RegulatoryAgent
-from ai_junkie_updates.agents.api_feed.agent import APIFeedAgent
 
 log = get_logger(__name__)
 
@@ -112,8 +109,13 @@ async def main() -> None:
     log.info("shutdown_complete")
 
 
-if __name__ == "__main__":
+def _cli() -> None:
+    """Synchronous entrypoint for the ``ai-junkie-updates`` console script."""
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         pass
+
+
+if __name__ == "__main__":
+    _cli()

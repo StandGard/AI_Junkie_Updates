@@ -1,10 +1,10 @@
 # AI Junkie Updates — TODO
 
-> Last updated: 2026-04-28
+> Last updated: 2026-06-01
 
 ## Completed
 
-- [x] Project scaffolding — 72 files, full directory structure
+- [x] Project scaffolding — 65 Python files, full directory structure
 - [x] Core modules — models, database, cache, Claude client, prompts
 - [x] Pipeline stages — normalizer, deduplicator, filter engine, router
 - [x] All 13 source agents — Twitter, RSS, Web Scraper, Changelog, GitHub, Reddit, Discord, Onchain, Telegram Channels, Press Releases, Podcast, Regulatory, API Feed
@@ -35,8 +35,9 @@
 - [ ] Coverage reporting (pytest-cov) in CI
 
 ### Infrastructure
-- [ ] Dockerfile and docker-compose.yml for containerized deployment
-- [ ] CI/CD pipeline (GitHub Actions) — lint, test, build
+- [x] Dockerfile for containerized deployment (+ .dockerignore)
+- [x] CI/CD pipeline (GitHub Actions) — lint (ruff), type-check (mypy), test (pytest)
+- [ ] docker-compose.yml for local orchestration
 - [ ] Health check endpoint (lightweight HTTP server for monitoring)
 - [ ] Metrics collection (Prometheus counters for items collected, analyzed, delivered)
 
@@ -56,8 +57,9 @@
 - [ ] PostgreSQL support for multi-instance deployment
 
 ### Quality
-- [ ] Type checking with mypy (strict mode)
-- [ ] Linting with ruff
+- [x] Type checking with mypy (lenient config; clean on all source files)
+- [x] Linting with ruff (E/W/F/I/B/C4; clean)
+- [ ] Type checking with mypy in strict mode
 - [ ] Pre-commit hooks configuration
 - [ ] Code coverage reporting
 - [ ] Security audit of credential handling

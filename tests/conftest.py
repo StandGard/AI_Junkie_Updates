@@ -17,7 +17,6 @@ os.environ.setdefault("AIJU_ANTHROPIC_API_KEY", "test-anthropic-key")
 os.environ.setdefault("AIJU_TELEGRAM_BOT_TOKEN", "test-telegram-token")
 
 from ai_junkie_updates.constants import (  # noqa: E402
-    DeliveryChannel,
     PipelineStatus,
     SourceType,
     UpdateCategory,

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from ai_junkie_updates.pipeline.normalizer import MAX_CONTENT_LENGTH, Normalizer
-
 from tests.conftest import make_raw_item
 
 

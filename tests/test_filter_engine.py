@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from ai_junkie_updates.constants import DeliveryChannel
 from ai_junkie_updates.pipeline.filter_engine import FilterEngine
-
 from tests.conftest import make_update_item
 
 WATCHLIST = ["openai", "anthropic", "acquisition"]

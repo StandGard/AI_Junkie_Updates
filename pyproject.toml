@@ -1,0 +1,95 @@
+[project]
+name = "ai-junkie-updates"
+version = "0.1.0"
+description = "Real-time AI industry intelligence aggregator — monitors 13 source types, analyses each item through Claude, and delivers tiered alerts to Telegram."
+readme = "ai_junkie_updates/README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+dependencies = [
+    "anthropic>=0.39.0,<1.0.0",
+    "pydantic>=2.9.0,<3.0.0",
+    "pydantic-settings>=2.6.0,<3.0.0",
+    "sqlalchemy[asyncio]>=2.0.36,<3.0.0",
+    "aiosqlite>=0.20.0,<1.0.0",
+    "aiohttp>=3.11.0,<4.0.0",
+    "feedparser>=6.0.11,<7.0.0",
+    "beautifulsoup4>=4.12.3,<5.0.0",
+    "lxml>=5.3.0,<6.0.0",
+    "xxhash>=3.5.0,<4.0.0",
+    "python-telegram-bot>=21.7,<22.0.0",
+    "structlog>=24.4.0,<25.0.0",
+    # Required by pydantic-settings for .env (env_file) support.
+    "python-dotenv>=1.0.1,<2.0.0",
+    "pyyaml>=6.0.1,<7.0.0",
+    "tenacity>=9.0.0,<10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0,<10.0.0",
+    "pytest-asyncio>=0.24.0,<2.0.0",
+    "aioresponses>=0.7.6,<1.0.0",
+    "ruff>=0.6.0",
+    "mypy>=1.11.0",
+]
+
+[project.scripts]
+ai-junkie-updates = "ai_junkie_updates.main:_cli"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["ai_junkie_updates*"]
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+asyncio_mode = "auto"
+addopts = "-ra -q"
+
+# ---------------------------------------------------------------------------
+# ruff
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [".venv", "build", "dist"]
+
+[tool.ruff.lint]
+# E/W pycodestyle, F pyflakes, I isort, B bugbear, C4 comprehensions.
+# UP (pyupgrade) is intentionally omitted: the codebase consistently uses the
+# typing.List/Optional idiom with `from __future__ import annotations`, and
+# rewriting that everywhere would be churn without benefit.
+select = ["E", "W", "F", "I", "B", "C4"]
+ignore = [
+    "E501",  # line length is enforced by the formatter, not the linter
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests set env vars before importing the package, so module-level imports are
+# intentionally not at the top of the file.
+"tests/conftest.py" = ["E402"]
+"scripts/dry_run.py" = ["E402"]
+
+# ---------------------------------------------------------------------------
+# mypy
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_redundant_casts = true
+no_implicit_optional = true
+files = ["ai_junkie_updates"]
+
+# yaml ships partial stubs that mypy flags as import-untyped even with
+# ignore_missing_imports; silence it explicitly. (types-PyYAML is in dev deps
+# for environments where it resolves cleanly.)
+[[tool.mypy.overrides]]
+module = ["yaml", "feedparser", "bs4", "xxhash"]
+ignore_missing_imports = true
+follow_imports = "skip"

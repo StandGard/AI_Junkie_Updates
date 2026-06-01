@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import re
 
-import pytest
 from aioresponses import aioresponses
 
 from ai_junkie_updates.constants import SourceType

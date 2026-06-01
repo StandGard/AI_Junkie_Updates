@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from ai_junkie_updates.constants import UpdateCategory
 from ai_junkie_updates.delivery.formatter import Formatter
-
 from tests.conftest import make_update_item
 
 

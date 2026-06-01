@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 
-from ai_junkie_updates.constants import SourceType, PipelineStatus
+from ai_junkie_updates.constants import PipelineStatus, SourceType
 from ai_junkie_updates.core.claude_client import claude_client
 from ai_junkie_updates.core.models import RawItem
 from ai_junkie_updates.pipeline.deduplicator import Deduplicator

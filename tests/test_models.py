@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
 from ai_junkie_updates.constants import (
     DeliveryChannel,
@@ -12,7 +13,6 @@ from ai_junkie_updates.constants import (
     UrgencyLevel,
 )
 from ai_junkie_updates.core.models import UpdateRecord
-
 from tests.conftest import make_update_item
 
 
@@ -50,5 +50,5 @@ def test_none_delivery_channel_round_trip():
 
 def test_score_bounds_validation():
     # Pydantic constrains score to 0..100.
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         make_update_item(score=150)

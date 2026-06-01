@@ -137,25 +137,33 @@ The full pipeline runs in `BaseAgent._process_item()`:
 ```python
 async def _process_item(self, raw_item: RawItem):
     # 1. Normalize
-    normalized = self.normalizer.normalize(raw_item)
-    
+    raw_item = self._normalizer.normalize(raw_item)
+
     # 2. Deduplicate
-    if await self.deduplicator.is_duplicate(normalized):
+    if await self._deduplicator.is_duplicate(raw_item):
         return  # silently drop
-    
-    # 3. Analyze via Claude
-    update_item = await claude_client.analyze(normalized)
-    
-    # 4. Filter
-    should_deliver, channel = self.filter_engine.should_deliver(
-        update_item, self.watchlist
+
+    # 3. Analyze via Claude (with the agent's source-specific context prompt)
+    update_item = await claude_client.analyze(
+        raw_item, context_prompt=self._context_prompt
+    )
+
+    # 4. Filter -> sets the delivery channel and pipeline status
+    should_deliver, channel = self._filter_engine.should_deliver(
+        update_item, self._watchlist
     )
     update_item.delivery_channel = channel
-    
-    # 5. Save to database
-    await db.save_item(update_item)
-    
-    # 6. Route for delivery
-    if should_deliver:
-        await router.route(update_item)
+    update_item.pipeline_status = (
+        PipelineStatus.FILTERED if should_deliver else PipelineStatus.DROPPED
+    )
+
+    # 5. Route for delivery
+    await router.route(update_item)
 ```
+
+> **Note on persistence:** `_process_item` does **not** write to the database
+> itself. Persistence happens inside the **Router**: delivered items are saved
+> by `Router._deliver()` (after a successful Telegram send), and dropped items
+> are saved by `Router.route()`. A consequence is that items still sitting in
+> the GENERAL/WATCHLIST batch queues at an ungraceful shutdown are not yet
+> persisted — `router.stop()` flushes them on a graceful shutdown.

@@ -28,11 +28,11 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import sys
 
 # Dry-run must never deliver or analyze, so we set placeholder credentials to
 # satisfy Settings() without ever exercising the Claude/Telegram clients.
 import os
+import sys
 
 os.environ.setdefault("AIJU_ANTHROPIC_API_KEY", "dry-run-no-call")
 os.environ.setdefault("AIJU_TELEGRAM_BOT_TOKEN", "dry-run-no-call")

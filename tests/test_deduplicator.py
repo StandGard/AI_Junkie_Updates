@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from ai_junkie_updates.pipeline import deduplicator as dedup_mod
 from ai_junkie_updates.pipeline.deduplicator import Deduplicator
-
 from tests.conftest import make_raw_item
 
 # Cache isolation is handled by the autouse _isolate_cache fixture in conftest.

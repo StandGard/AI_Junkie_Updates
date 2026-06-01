@@ -7,7 +7,6 @@ the real pipeline code running through BaseAgent._process_item.
 
 from __future__ import annotations
 
-import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
@@ -25,9 +24,7 @@ from ai_junkie_updates.core.database import DatabaseManager
 from ai_junkie_updates.core.models import Base, RawItem, UpdateItem
 from ai_junkie_updates.pipeline import deduplicator as dedup_mod
 from ai_junkie_updates.pipeline import router as router_mod
-
 from tests.conftest import make_raw_item
-
 
 # --- a concrete, do-nothing agent we can feed items into directly ----------
 
