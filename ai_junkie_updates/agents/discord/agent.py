@@ -103,8 +103,8 @@ class DiscordAgent(BaseAgent):
         items, self._inbox = self._inbox[:], []
         return items
 
-    async def run(self) -> None:
+    async def run(self, collection_semaphore: "asyncio.Semaphore | None" = None) -> None:
         """Override run to ensure webhook server starts before polling."""
         if self._server is None:
             await self._start_webhook_server()
-        await super().run()
+        await super().run(collection_semaphore)

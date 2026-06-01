@@ -66,15 +66,23 @@ class BaseAgent(ABC):
         """Collect raw items from the source. Subclasses must implement."""
         ...
 
-    async def run(self) -> None:
-        """Infinite loop: collect → normalize → deduplicate → analyze → filter → route."""
+    async def run(self, collection_semaphore: "asyncio.Semaphore | None" = None) -> None:
+        """Infinite loop: collect → normalize → deduplicate → analyze → filter → route.
+
+        If ``collection_semaphore`` is provided it bounds how many agents may
+        perform an active work cycle (collect + process) at the same time. The
+        semaphore is held only for the duration of the cycle and released while
+        the agent sleeps, so every agent keeps running concurrently — only the
+        amount of simultaneous work is capped.
+        """
         self.log.info("agent_started", source_type=self.source_type.value)
         while self._running:
             try:
-                items = await self.collect()
-                self.log.info("items_collected", count=len(items))
-                for item in items:
-                    await self._process_item(item)
+                if collection_semaphore is not None:
+                    async with collection_semaphore:
+                        await self._run_cycle()
+                else:
+                    await self._run_cycle()
             except asyncio.CancelledError:
                 self.log.info("agent_cancelled")
                 break
@@ -82,6 +90,13 @@ class BaseAgent(ABC):
                 self.log.error("agent_loop_error", error=str(exc))
 
             await asyncio.sleep(self.poll_interval)
+
+    async def _run_cycle(self) -> None:
+        """Run a single collect-and-process cycle."""
+        items = await self.collect()
+        self.log.info("items_collected", count=len(items))
+        for item in items:
+            await self._process_item(item)
 
     async def _process_item(self, raw_item: RawItem) -> None:
         """Run a single item through the full pipeline."""

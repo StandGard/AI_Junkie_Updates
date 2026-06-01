@@ -49,19 +49,16 @@ def _build_agents() -> list:
     ]
 
 
-async def _run_agent_with_semaphore(agent, semaphore: asyncio.Semaphore) -> None:
-    """Run an agent's loop while respecting the concurrency semaphore."""
-    async with semaphore:
-        await agent.run()
-
-
 async def main() -> None:
     """Boot the system and run all agents until interrupted."""
     singletons = await bootstrap()
     db = singletons["db"]
 
     agents = _build_agents()
-    semaphore = asyncio.Semaphore(settings.MAX_CONCURRENT_AGENTS)
+    # Bounds how many agents may perform an active collect/process cycle at the
+    # same time. Each agent still runs continuously — the semaphore is held only
+    # during a cycle and released while the agent sleeps between polls.
+    collection_semaphore = asyncio.Semaphore(settings.MAX_CONCURRENT_AGENTS)
 
     # Start the router's batching flush loops
     router.start_flush_loops()
@@ -92,7 +89,7 @@ async def main() -> None:
     # Launch all agents concurrently
     tasks: List[asyncio.Task] = [
         asyncio.create_task(
-            _run_agent_with_semaphore(agent, semaphore),
+            agent.run(collection_semaphore),
             name=f"agent-{agent.source_name}",
         )
         for agent in agents
