@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     SCORE_THRESHOLD_WATCHLIST: int = 40
     POLL_INTERVAL_SECONDS: int = 300
     MAX_CONCURRENT_AGENTS: int = 5
-    CLAUDE_MODEL: str = "claude-opus-4-5"
+    CLAUDE_MODEL: str = "claude-opus-4-8"
     LOG_LEVEL: str = "INFO"
 
     def validate_required(self) -> None:
