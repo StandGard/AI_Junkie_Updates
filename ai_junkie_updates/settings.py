@@ -9,6 +9,8 @@ from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
+from ai_junkie_updates.constants import SCORE_WATCHLIST, SCORE_WORTH_KNOWING
+
 # .env lives alongside this module (see .env.example), independent of CWD.
 _ENV_FILE = Path(__file__).resolve().parent / ".env"
 
@@ -34,8 +36,8 @@ class Settings(BaseSettings):
     # Optional with defaults
     DATABASE_URL: str = "sqlite+aiosqlite:///storage/aiju.db"
     CACHE_TTL_SECONDS: int = 86400
-    SCORE_THRESHOLD_DELIVER: int = 50
-    SCORE_THRESHOLD_WATCHLIST: int = 40
+    SCORE_THRESHOLD_DELIVER: int = SCORE_WORTH_KNOWING
+    SCORE_THRESHOLD_WATCHLIST: int = SCORE_WATCHLIST
     POLL_INTERVAL_SECONDS: int = 300
     MAX_CONCURRENT_AGENTS: int = 5
     CLAUDE_MODEL: str = "claude-opus-4-8"
