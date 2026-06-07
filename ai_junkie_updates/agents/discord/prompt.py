@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for Discord items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: Discord server message
 This content was received from a monitored Discord server — typically an AI company's official server, an open-source project community, or a researcher community. When analyzing it:

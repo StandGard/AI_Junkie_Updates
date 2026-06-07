@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for Reddit items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: Reddit post
 This content was collected from a monitored AI-focused subreddit. When analyzing it:

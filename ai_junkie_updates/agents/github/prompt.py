@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for GitHub items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: GitHub repository release or event
 This content comes from a GitHub repository — either a new release, a significant commit, or a repository event. When analyzing it:

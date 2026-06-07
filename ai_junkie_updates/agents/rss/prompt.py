@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for RSS items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: RSS feed article
 This content was collected from an RSS feed from an AI news source, company blog, or research publication. When analyzing it:

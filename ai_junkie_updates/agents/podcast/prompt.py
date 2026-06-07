@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for podcast items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: Podcast episode
 This content comes from a podcast episode — either a title and description from an RSS feed, or a transcript excerpt. When analyzing it:

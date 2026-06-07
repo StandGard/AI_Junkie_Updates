@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for regulatory items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: Regulatory filing or government document
 This content comes from a government agency, regulatory body, or legislative source — such as the FTC, EU AI Office, NIST, UK DSIT, Congress, or equivalent international bodies. When analyzing it:

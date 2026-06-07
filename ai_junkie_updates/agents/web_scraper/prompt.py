@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for web scraper items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: Web page scrape
 This content was scraped from a monitored web page — typically a company website, product page, documentation site, or news publication. When analyzing it:

@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for on-chain items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: On-chain blockchain event
 This content comes from monitoring blockchain networks for events related to the AI industry — including AI token deployments, DAO governance actions, compute marketplace transactions, and AI-adjacent protocol events. When analyzing it:

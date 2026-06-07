@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for Twitter items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: Twitter/X social media post
 This content was collected from Twitter/X. When analyzing it:

@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for API feed items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: Structured API feed
 This content comes from a structured data API — such as a news aggregation API, data provider feed, financial data source, or third-party monitoring service. When analyzing it:

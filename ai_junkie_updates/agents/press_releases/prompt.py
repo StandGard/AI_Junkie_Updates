@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for press release items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: Press release or official company statement
 This content comes from a press release, PR newswire feed, or official company statement page. When analyzing it:

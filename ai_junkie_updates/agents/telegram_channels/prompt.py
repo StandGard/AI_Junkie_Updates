@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for Telegram channel items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: Telegram channel post
 This content was collected from a monitored Telegram channel — typically an AI company's official channel, a researcher's channel, or a well-regarded AI news channel. When analyzing it:

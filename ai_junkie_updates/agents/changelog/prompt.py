@@ -1,5 +1,7 @@
 """Context prompt injected into Claude analysis for changelog items."""
 
+from __future__ import annotations
+
 AGENT_CONTEXT_PROMPT = """
 Source type: Product changelog or release notes
 This content comes from a changelog, release notes page, or version history document from an AI product or tool. When analyzing it:
